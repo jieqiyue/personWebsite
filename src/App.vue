@@ -25,7 +25,7 @@ import Header from './components/Header.vue'
   max-width: 100vw; /* 防止溢出 */
   margin: 0;
   padding: 0;
-  background-color: #f0f7f0; /* 淡绿色背景 */
+  background-color: var(--background);
   overflow-x: hidden; /* 防止水平滚动 */
 }
 
@@ -35,7 +35,7 @@ import Header from './components/Header.vue'
   flex-direction: column;
   width: 100%;
   max-width: 100%;
-  background-color: #f0f7f0; /* 淡绿色背景 */
+  background-color: var(--background);
   margin: 0;
   padding: 0;
 }
@@ -47,17 +47,17 @@ main {
   max-width: 100%;
   margin: 0 auto;
   padding: 0;
-  background-color: #f0f7f0; /* 淡绿色背景 */
+  background-color: var(--background);
 }
 
 /* 页脚样式 */
 .site-footer {
   text-align: center;
   padding: 1rem 0;
-  background: #daebd9; /* 与导航栏相同的深绿色 */
+  background: var(--border);
   width: 100%;
-  border-top: 1px solid #c8e6c7; /* 添加微妙的边框 */
-  color: #2c6e49; /* 更深的绿色文本 */
+  border-top: 1px solid var(--border);
+  color: var(--primary);
 }
 
 /* 防止内部元素溢出 */
@@ -78,6 +78,6 @@ main {
 body {
   margin: 0;
   padding: 0;
-  background-color: white;
+  background-color: var(--background);
 }
 </style>

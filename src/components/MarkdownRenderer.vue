@@ -5,7 +5,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import MarkdownIt from 'markdown-it'
-import { defineProps } from 'vue'
 
 const props = defineProps({
   source: {
@@ -46,40 +45,41 @@ watch(() => props.source, () => {
 .markdown-content {
   text-align: left;
   line-height: 1.6;
-  color: #333;
+  color: var(--text);
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px var(--shadow);
 }
 
 .markdown-content img {
   max-width: 100%;
   border-radius: 8px;
-  margin: 1rem 0;
+  margin: 0rem 0;
 }
 
 .markdown-content h1 {
   font-size: 2.5rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--border);
   padding-bottom: 0.5rem;
   margin-bottom: 1.5rem;
-  color: #2c6e49;
+  color: var(--primary);
 }
 
 .markdown-content h2 {
   font-size: 1.8rem;
   margin-top: 2rem;
   margin-bottom: 1rem;
-  color: #2c6e49;
+  color: var(--primary);
 }
 
 .markdown-content h3 {
   font-size: 1.4rem;
   margin-top: 1.5rem;
   margin-bottom: 0.8rem;
+  color: var(--secondary);
 }
 
 .markdown-content p {
@@ -96,21 +96,22 @@ watch(() => props.source, () => {
 }
 
 .markdown-content blockquote {
-  border-left: 4px solid #daebd9;
+  border-left: 4px solid var(--border);
   padding-left: 1rem;
   margin: 1rem 0;
-  color: #666;
+  color: var(--text);
+  opacity: 0.8;
   font-style: italic;
 }
 
 .markdown-content hr {
   border: none;
-  border-top: 1px solid #eaeaea;
+  border-top: 1px solid var(--border);
   margin: 2rem 0;
 }
 
 .markdown-content code {
-  background: #f5f5f5;
+  background: var(--accent);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-family: monospace;
@@ -118,11 +119,13 @@ watch(() => props.source, () => {
 }
 
 .markdown-content a {
-  color: #2c6e49;
+  color: var(--primary);
   text-decoration: none;
+  border-bottom: 1px dashed var(--primary);
+  transition: border-color 0.2s ease;
 }
 
 .markdown-content a:hover {
-  text-decoration: underline;
+  border-bottom: 1px solid var(--primary);
 }
 </style> 

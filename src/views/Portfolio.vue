@@ -79,6 +79,11 @@ const filteredPhotos = computed(() => {
   padding: 2rem 0;
 }
 
+.portfolio h1 {
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
 .categories {
   margin: 2rem 0;
   display: flex;
@@ -87,21 +92,98 @@ const filteredPhotos = computed(() => {
 }
 
 button {
-  padding: 0.5rem 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  background: white;
+  padding: 0.7rem 1.8rem;
+  border: 1px solid var(--border);
+  border-radius: 25px;
+  background: var(--surface);
   cursor: pointer;
   transition: all 0.3s ease;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.95rem;
+  position: relative;
+  
+  /* 毛玻璃效果 */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px var(--shadow);
+  
+  /* 确保元素层级正确 */
+  z-index: 1;
+  overflow: hidden;
 }
 
-button.active {
-  background: #42b883;
-  color: white;
-  border-color: #42b883;
+/* 按钮背景发光效果 */
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  z-index: -1;
 }
 
 button:hover {
-  border-color: #42b883;
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+
+button:hover::before {
+  transform: translateX(100%);
+}
+
+button.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* 活跃按钮的扩散效果 */
+button.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1);
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(20);
+    opacity: 0;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .categories {
+    justify-content: center;
+  }
+  
+  button {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
 }
 </style> 

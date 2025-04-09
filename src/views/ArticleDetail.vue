@@ -73,8 +73,21 @@ const loadArticle = async (id) => {
       ...articleMeta
     }
     
-    // 直接渲染Markdown内容
-    renderedContent.value = md.render(content)
+    // 移除YAML前置元数据并只渲染实际内容
+    let processedContent = content
+    
+    // 如果内容以---开头，说明存在YAML前置元数据
+    if (content.trim().startsWith('---')) {
+      // 寻找第二个---分隔符，YAML前置元数据在两个---之间
+      const secondSeparatorIndex = content.indexOf('---', 3)
+      if (secondSeparatorIndex !== -1) {
+        // 提取---之后的实际内容
+        processedContent = content.substring(secondSeparatorIndex + 3).trim()
+      }
+    }
+    
+    // 直接渲染处理后的Markdown内容
+    renderedContent.value = md.render(processedContent)
   } catch (err) {
     error.value = '获取文章内容失败，请稍后重试'
     console.error('加载文章失败:', err)

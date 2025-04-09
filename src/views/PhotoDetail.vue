@@ -224,7 +224,7 @@ onUnmounted(() => {
   padding: 2rem 2rem 0 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  background-color: #f0f7f0; /* 匹配全局背景色 */
+  background-color: var(--background); /* 使用主题变量 */
 }
 
 /* 返回按钮独立容器 */
@@ -236,19 +236,21 @@ onUnmounted(() => {
 
 .back-button {
   padding: 0.5rem 1rem;
-  background: #ffffff; /* 白色背景 */
-  border: none;
+  background: var(--surface); /* 使用主题变量 */
+  border: 1px solid var(--border); /* 添加边框增强可见性 */
   border-radius: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow); /* 使用主题变量 */
+  color: var(--primary); /* 使用主题变量使文字颜色更加深色 */
+  font-weight: 500; /* 加粗字体 */
 }
 
 .back-button:hover {
-  background: #f3f9f3; /* 淡绿色调的悬停效果 */
+  background: var(--accent); /* 使用主题变量 */
   transform: translateX(-5px);
 }
 
@@ -273,8 +275,8 @@ onUnmounted(() => {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #42b883;
+  border: 3px solid var(--border); /* 使用主题变量 */
+  border-top: 3px solid var(--primary); /* 使用主题变量 */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -303,12 +305,12 @@ onUnmounted(() => {
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: #42b883;
+  background: var(--primary); /* 使用主题变量 */
   color: white;
 }
 
 .retry-button:hover {
-  background: #3aa876;
+  background: var(--secondary); /* 使用主题变量 */
 }
 
 /* 图片容器样式 */
@@ -355,9 +357,9 @@ onUnmounted(() => {
 
 /* 照片信息样式 */
 .photo-info {
-  background: #fff; /* 白色背景 */
+  background: var(--surface); /* 使用主题变量 */
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px var(--shadow); /* 使用主题变量 */
   padding: 1.5rem;
   align-self: start;
   margin-bottom: 0; /* 移除底部外边距 */
@@ -366,8 +368,8 @@ onUnmounted(() => {
 .photo-info h1 {
   margin: 0 0 1.5rem 0;
   font-size: 1.8rem;
-  color: #333;
-  border-bottom: 2px solid #f0f0f0;
+  color: var(--text); /* 使用主题变量 */
+  border-bottom: 2px solid var(--border); /* 使用主题变量 */
   padding-bottom: 0.8rem;
 }
 
@@ -382,7 +384,7 @@ onUnmounted(() => {
 
 .info-group h3 {
   margin-bottom: 0.8rem;
-  color: #42b883;
+  color: var(--primary); /* 使用主题变量 */
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -391,7 +393,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 1rem;
-  background: #f9f9f9;
+  background: var(--accent); /* 使用主题变量 */
   padding: 1rem;
   border-radius: 6px;
 }
@@ -403,13 +405,14 @@ onUnmounted(() => {
 }
 
 .info-item .label {
-  color: #666;
+  color: var(--text); /* 使用主题变量 */
+  opacity: 0.7; /* 降低不透明度使其变淡 */
   font-size: 0.85rem;
 }
 
 .info-item .value {
   font-weight: 500;
-  color: #333;
+  color: var(--text); /* 使用主题变量 */
 }
 
 .categories {
@@ -420,21 +423,22 @@ onUnmounted(() => {
 
 .category-tag {
   padding: 0.3rem 1rem;
-  background: #f5f5f5;
+  background: var(--accent); /* 使用主题变量 */
   border-radius: 15px;
   font-size: 0.9rem;
 }
 
 .description {
   line-height: 1.6;
-  color: #444;
-  background: #f9f9f9;
+  color: var(--text); /* 使用主题变量 */
+  background: var(--accent); /* 使用主题变量 */
   padding: 1rem;
   border-radius: 6px;
 }
 
 .location {
-  color: #666;
+  color: var(--text); /* 使用主题变量 */
+  opacity: 0.8; /* 降低不透明度使其变淡 */
 }
 
 /* 响应式布局 */
