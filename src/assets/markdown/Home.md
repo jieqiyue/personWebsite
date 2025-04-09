@@ -1,44 +1,61 @@
-# 我的摄影世界 👋
+<div align="center">
+   <h1>Hi there, I'm Qiyue <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="25px"> </h1>
+</div>
 
-![封面图片](https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000)
+<p align='center'>
+   <a href="https://space.bilibili.com/383098028"><img style="height: 30px !important; max-height: 30px; width: auto;" src="/images/bilibili.png"></a>&nbsp;&nbsp;
+ </p>
+<div align="center">
+<h3><img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30"> 🙎 Qiyue Jie | 💻 Backend Developer | 🛸 HangZhou , CHINA <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30"></h3>
 
-## 👨‍💻 关于我
+</div>
 
-我是一名热爱摄影的爱好者，专注于风景和人文摄影。通过镜头捕捉世界的美丽瞬间是我最大的乐趣。
+ 
+<br />
 
-- 🌱 我正在学习人像摄影和后期处理技术
-- 🔭 我最喜欢的拍摄主题是自然风光和城市街景
-- 📷 我使用的器材: Sony A7R IV + 多支专业镜头
+<p align="center">
+  <h3> I'm a developer from China.</h3>
+</p>
 
-## 📸 摄影理念
+ - 🥀 Learning Java & Go & Rust.
+ 
+ - Interested in operating systems, distributed system design.
 
-我相信摄影不仅仅是按下快门的瞬间，更是观察世界的一种方式。通过摄影，我们可以：
+ - Raft, Key/Value store engine, relational database.
+   
+ - 🔭 SpaceX FanBoi, die for space😼
 
-- 记录光与影的瞬息变化
-- 发现日常生活中被忽略的美
-- 表达对自然和人文的独特视角
-- 分享心灵触动的刹那永恒
+ - 🛸 I love basketball🏀，swimming🏊🏻，photography📷，fitness💪🏻，cycling🚴
+ 
+ - I do backend developer and a bit of everything :heart:
+ 
+ - All About living life at its best.
+ 
+ - 💬 Connect? lets get social 👉🏼 2287061933@qq.com
+ 
+ <p align="center">
+  <h4> Full Stack | Competitive Programming </h4>
+   </p>
 
-## 💼 技术专长
+<!--  -->
 
-- 风光摄影 ⭐⭐⭐⭐⭐
-- 街头摄影 ⭐⭐⭐⭐
-- 人像摄影 ⭐⭐⭐
-- Lightroom后期 ⭐⭐⭐⭐
-- Photoshop修图 ⭐⭐⭐
+<p align="left" >
+<a href="https://github.com/anuraghazra/github-readme-stats"> 
+    <img  src="https://github-readme-stats.vercel.app/api?username=jieqiyue&&show_icons=true&theme=radical"/>
+  </a>
 
-## 📫 联系我
+</p>
 
-- 📧 Email: photography@example.com
-- 📱 微信: photo_lover
-- 📷 Instagram: @my_photography_journey
+<br />
 
-## 🏆 获奖经历
+<h2 align="center">🤝 Support</h2>
 
-- 2023年全国风光摄影大赛优秀奖
-- 2022年城市街拍摄影展入选作品
-- 2021年自然风光摄影比赛三等奖
+<p align="center">💙 If you like my projects, Give them ⭐ and Share it with friends!</p>
+</p>
+<p align="center">Made with ❤️ in CHINA</p>
 
----
+<h1 align='center'>⚡️<i>Stay awesome!</i>⚡️</h1>
 
-*热爱光影，记录生活，分享感动* 
+<p align="center">
+        <img src="https://raw.githubusercontent.com/mayhemantt/mayhemantt/Update/svg/Bottom.svg" alt="Github Stats" />
+</p>
