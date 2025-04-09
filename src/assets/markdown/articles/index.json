@@ -4,7 +4,7 @@
       "id": "sunset-photography",
       "title": "如何拍摄完美的日落",
       "date": "2024-04-08",
-      "coverImage": "/src/assets/images/articles/sunset.jpg",
+      "coverImage": "/images/articles/p1.jpeg",
       "tags": ["技巧分享", "风光摄影"],
       "excerpt": "分享我多年来拍摄日落的经验和技巧，从器材选择到后期处理的完整指南。"
     },
@@ -12,7 +12,7 @@
       "id": "street-photography",
       "title": "街头摄影的艺术",
       "date": "2024-04-07",
-      "coverImage": "/src/assets/images/articles/street.jpg",
+      "coverImage": "/images/articles/p1.jpeg",
       "tags": ["街拍", "人文"],
       "excerpt": "探索街头摄影的魅力，如何捕捉城市中的精彩瞬间。"
     },
@@ -20,7 +20,7 @@
       "id": "portrait-guide",
       "title": "人像摄影入门指南",
       "date": "2024-04-06",
-      "coverImage": "/src/assets/images/articles/portrait.jpg",
+      "coverImage": "/images/articles/p1.jpeg",
       "tags": ["人像摄影", "技巧分享"],
       "excerpt": "从构图到用光，全方位解析人像摄影的基础知识。"
     }
