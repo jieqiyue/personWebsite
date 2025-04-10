@@ -1,0 +1,139 @@
+/* 自定义Markdown样式，补充github-markdown-css */
+
+/* 自定义容器样式 */
+.custom-block {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  border-left-width: 0.5rem;
+  border-left-style: solid;
+  border-radius: 0.25rem;
+}
+
+.custom-block .custom-block-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.custom-block p:last-child {
+  margin-bottom: 0;
+}
+
+/* 提示容器 */
+.tip {
+  background-color: rgba(66, 184, 131, 0.1);
+  border-color: #42b883;
+}
+
+.tip .custom-block-title {
+  color: #42b883;
+}
+
+/* 警告容器 */
+.warning {
+  background-color: rgba(255, 197, 23, 0.1);
+  border-color: #ffc517;
+}
+
+.warning .custom-block-title {
+  color: #e09b00;
+}
+
+/* 危险容器 */
+.danger {
+  background-color: rgba(237, 60, 80, 0.1);
+  border-color: #ed3c50;
+}
+
+.danger .custom-block-title {
+  color: #ed3c50;
+}
+
+/* 成功容器 */
+.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-color: #28a745;
+}
+
+.success .custom-block-title {
+  color: #28a745;
+}
+
+/* 详情容器 */
+details.custom-block {
+  background-color: #f8f9fa;
+  border-left-color: #adb5bd;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+details.custom-block summary {
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Emoji样式 */
+.emoji {
+  height: 1.2em;
+  vertical-align: middle;
+}
+
+/* 适应主题色变量 */
+.markdown-body {
+  --color-primary: var(--primary, #42b883);
+  --color-secondary: var(--secondary, #35495e);
+  --color-border: var(--border, #e1e4e8);
+}
+
+.markdown-body a {
+  color: var(--color-primary);
+}
+
+.markdown-body hr {
+  background-color: var(--color-border);
+}
+
+/* 增强图片显示 */
+.markdown-body img {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 100%;
+}
+
+/* 代码区域增强 */
+.markdown-body pre {
+  background-color: #f6f8fa;
+  border-radius: 6px;
+}
+
+/* 表格增强 */
+.markdown-body table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* 适应深色模式 */
+@media (prefers-color-scheme: dark) {
+  .markdown-body {
+    color-scheme: dark;
+    --color-border: #343a40;
+  }
+  
+  .markdown-body pre {
+    background-color: #2d2d2d;
+  }
+  
+  .markdown-body table tr:nth-child(2n) {
+    background-color: #2a2a2a;
+  }
+  
+  .markdown-body img {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+  
+  .markdown-body img:hover {
+    opacity: 1;
+  }
+} 

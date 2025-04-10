@@ -3,7 +3,7 @@
     <h1 class="page-title">关于</h1>
     
     <div class="markdown-container">
-      <MarkdownRenderer :source="markdownSource" />
+      <MarkdownRenderer :content="markdownContent" :loading="loading" />
     </div>
     
     <div class="edit-link">
@@ -16,16 +16,32 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
-// Markdown文件路径
-const markdownSource = ref('/markdown/About.md')
+// 状态变量
+const markdownContent = ref('')
+const loading = ref(true)
+const markdownPath = '/markdown/About.md'
 
 // 编辑链接 - 在实际应用中，这可能是指向CMS或GitHub仓库的链接
-// 这里我们使用相对路径指向文件系统中的Markdown文件
-const editUrl = ref('/markdown/About.md')
+const editUrl = ref(markdownPath)
 
+// 加载Markdown内容
+const loadMarkdown = async () => {
+  try {
+    const response = await fetch(markdownPath)
+    markdownContent.value = await response.text()
+  } catch (error) {
+    console.error('加载Markdown失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadMarkdown()
+})
 </script>
 
 <style scoped>

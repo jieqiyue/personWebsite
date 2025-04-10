@@ -14,7 +14,9 @@
     <div class="article-cover" v-if="article.coverImage">
       <img :src="article.coverImage" :alt="article.title">
     </div>
-    <div class="article-content" v-html="renderedContent"></div>
+    <div class="article-content">
+      <MarkdownRenderer :content="markdownContent" :loading="loading" />
+    </div>
   </div>
   <div v-else-if="loading" class="loading">
     正在加载文章...
@@ -27,19 +29,13 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import MarkdownIt from 'markdown-it'
-
-const md = new MarkdownIt({
-  html: true,
-  breaks: true,
-  linkify: true
-})
+import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
 const route = useRoute()
 const article = ref(null)
 const loading = ref(false)
 const error = ref(null)
-const renderedContent = ref('')
+const markdownContent = ref('')
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('zh-CN', {
@@ -73,10 +69,8 @@ const loadArticle = async (id) => {
       ...articleMeta
     }
     
-    // 移除YAML前置元数据并只渲染实际内容
-    let processedContent = content
-    
     // 如果内容以---开头，说明存在YAML前置元数据
+    let processedContent = content
     if (content.trim().startsWith('---')) {
       // 寻找第二个---分隔符，YAML前置元数据在两个---之间
       const secondSeparatorIndex = content.indexOf('---', 3)
@@ -86,8 +80,8 @@ const loadArticle = async (id) => {
       }
     }
     
-    // 直接渲染处理后的Markdown内容
-    renderedContent.value = md.render(processedContent)
+    // 保存处理后的Markdown内容
+    markdownContent.value = processedContent
   } catch (err) {
     error.value = '获取文章内容失败，请稍后重试'
     console.error('加载文章失败:', err)
