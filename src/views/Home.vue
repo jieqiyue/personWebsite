@@ -12,7 +12,7 @@ import { ref } from 'vue'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
 // Markdown文件路径 
-const markdownSource = ref('/markdown/Home.md')
+const markdownSource = ref('/markdown/emoji-test.md')
 </script>
 
 <style scoped>

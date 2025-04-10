@@ -5,6 +5,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import MarkdownIt from 'markdown-it'
+import { full as emoji } from 'markdown-it-emoji'
 
 const props = defineProps({
   source: {
@@ -16,7 +17,23 @@ const props = defineProps({
 const md = new MarkdownIt({
   html: true,
   linkify: true,
-  typographer: true
+  typographer: true,
+  breaks: true
+})
+
+// 使用emoji插件，配置自定义表情符号快捷方式
+md.use(emoji, {
+  shortcuts: {
+    // 添加一些常用表情符号的快捷方式
+    'smile': [':)', ':-)', '😊'],
+    'laughing': [':D', ':-D', '😄'],
+    'wink': [';)', ';-)', '😉'],
+    'frown': [':(', ':-(', '😞'],
+    'stuck_out_tongue': [':P', ':-P', '😛'],
+    'confused': [':/', ':-/', '😕'],
+    'open_mouth': [':O', ':-O', '😮'],
+    'heart': ['<3', '❤️']
+  }
 })
 
 const renderedContent = ref('')
@@ -24,11 +41,19 @@ const renderedContent = ref('')
 const renderMarkdown = async () => {
   try {
     const response = await fetch(props.source)
+    if (!response.ok) {
+      throw new Error(`无法加载文件: ${response.status} ${response.statusText}`);
+    }
+    
     const text = await response.text()
     renderedContent.value = md.render(text)
   } catch (error) {
     console.error('加载Markdown文件失败:', error)
-    renderedContent.value = '<p>内容加载失败</p>'
+    renderedContent.value = `<div class="markdown-error">
+      <h3>内容加载失败</h3>
+      <p>无法加载文件: ${props.source}</p>
+      <p>错误: ${error.message}</p>
+    </div>`;
   }
 }
 
@@ -57,7 +82,7 @@ watch(() => props.source, () => {
 .markdown-content img {
   max-width: 100%;
   border-radius: 8px;
-  margin: 0rem 0;
+  margin: 0.5rem 0;
 }
 
 .markdown-content h1 {
@@ -118,6 +143,52 @@ watch(() => props.source, () => {
   font-size: 0.9em;
 }
 
+.markdown-content pre {
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.markdown-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Emoji样式 */
+.emoji {
+  height: 1.2em;
+  vertical-align: middle;
+}
+
+/* 表格样式 */
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  display: block;
+}
+
+.markdown-content table th {
+  background-color: var(--surface);
+  color: var(--primary);
+  font-weight: bold;
+  padding: 10px 15px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.markdown-content table td {
+  padding: 8px 15px;
+  border: 1px solid var(--border);
+}
+
+.markdown-content table tr:nth-child(even) {
+  background-color: var(--accent);
+}
+
 .markdown-content a {
   color: var(--primary);
   text-decoration: none;
@@ -127,5 +198,13 @@ watch(() => props.source, () => {
 
 .markdown-content a:hover {
   border-bottom: 1px solid var(--primary);
+}
+
+.markdown-error {
+  padding: 1rem;
+  background: #fdd;
+  border-left: 4px solid #f66;
+  color: #700;
+  border-radius: 4px;
 }
 </style> 
