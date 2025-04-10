@@ -18,7 +18,7 @@ const loading = ref(true)
 // 加载Markdown内容
 const loadMarkdown = async () => {
   try {
-    const response = await fetch('/markdown/container-test.md')
+    const response = await fetch('/markdown/image-test.md')
     markdownContent.value = await response.text()
   } catch (error) {
     console.error('加载Markdown失败:', error)

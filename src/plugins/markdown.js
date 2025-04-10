@@ -22,6 +22,30 @@ const md = new MarkdownIt({
   }
 })
 
+// 自定义图片渲染规则
+const defaultRender = md.renderer.rules.image || function(tokens, idx, options, env, self) {
+  return self.renderToken(tokens, idx, options);
+};
+
+md.renderer.rules.image = function (tokens, idx, options, env, self) {
+  const token = tokens[idx];
+  const srcIndex = token.attrIndex('src');
+  const altIndex = token.attrIndex('alt');
+  let src = token.attrs[srcIndex][1];
+  const alt = altIndex >= 0 ? token.attrs[altIndex][1] : '';
+  
+  // 处理相对路径的图片链接，CSDN或其他图片服务器链接保持不变
+  if (src && !src.startsWith('http') && !src.startsWith('/')) {
+    // 如果是相对路径且不以/开头，转为绝对路径
+    src = '/' + src;
+    token.attrs[srcIndex][1] = src;
+  }
+  
+  // 为图片添加加载错误处理
+  const imgHtml = defaultRender(tokens, idx, options, env, self);
+  return imgHtml.replace('<img', '<img loading="lazy" onload="this.classList.add(\'loaded\')" onerror="this.classList.add(\'error\'); this.setAttribute(\'data-error-src\', this.src); this.alt=\'图片加载失败: \' + this.alt"');
+};
+
 // 使用emoji插件，配置自定义表情符号快捷方式
 md.use(emoji, {
   shortcuts: {

@@ -100,6 +100,28 @@ details.custom-block summary {
   display: block;
   margin: 1.5rem auto;
   max-width: 100%;
+  height: auto !important;
+  object-fit: contain;
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+
+.markdown-body img.loaded {
+  opacity: 1;
+}
+
+.markdown-body img.error {
+  border: 1px solid #ff6b6b;
+  background-color: #fff0f0;
+  min-height: 100px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d63031;
+  font-size: 0.9rem;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 /* 代码区域增强 */
@@ -129,8 +151,9 @@ details.custom-block summary {
   }
   
   .markdown-body img {
-    opacity: 0.8;
+    opacity: 0.9;
     transition: opacity 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.05);
   }
   
   .markdown-body img:hover {
