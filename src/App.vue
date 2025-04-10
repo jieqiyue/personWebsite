@@ -1,5 +1,6 @@
 <script setup>
 import Header from './components/Header.vue'
+import BackToTop from './components/BackToTop.vue'
 </script>
 
 <template>
@@ -12,6 +13,7 @@ import Header from './components/Header.vue'
         </transition>
       </router-view>
     </main>
+    <BackToTop />
     <footer class="site-footer">
       <p>&copy; {{ new Date().getFullYear() }} 我的摄影博客. All rights reserved.</p>
     </footer>
