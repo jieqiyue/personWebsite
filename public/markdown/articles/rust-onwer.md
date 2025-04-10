@@ -32,7 +32,7 @@ println!("x = {}, y = {}", x, y);
 
 这三条是所有权的规则。
 那在实际发生所有权转移的时候，内存中发生了什么事情呢？
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a155c22e31e64395884777a3c1cd9ddc.png)
+![在这里插入图片描述](/images/art/image.png)
 ```rust
 let s1 = String::from("hello");
 let s2 = s1;
@@ -138,7 +138,7 @@ fn calculate_length(s: &String) -> usize {
 ```
 那么，在这个代码里面就不会发生所有权的转移。因为String的所有权并没有发生转移，因为传给函数的参数是一个引用。
 以上代码在内存中是这样的：
-![](https://i-blog.csdnimg.cn/direct/38cd29e4bcc14ac0b47922f91afc5ac5.png)
+![](/images/art/image1.png)
 所以s在使用完毕之后，并不会去销毁s1。
 上面这种方式叫做不可变引用。
 >可变引用

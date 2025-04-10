@@ -6,7 +6,7 @@
 
 这是从网络加载的图片：
 
-![网络图片](/images/art/imgae.png)
+![网络图片](/images/art/image.png)
 
 ## 相对路径图片
 
