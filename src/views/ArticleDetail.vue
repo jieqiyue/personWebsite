@@ -1,22 +1,56 @@
 <template>
-  <div class="article-detail" v-if="article">
-    <div class="article-header">
-      <h1>{{ article.title }}</h1>
-      <div class="article-meta">
-        <span class="date">{{ formatDate(article.date) }}</span>
-        <div class="tags">
-          <span v-for="tag in article.tags" :key="tag" class="tag">
-            #{{ tag }}
-          </span>
+  <div class="article-container" v-if="article">
+    <div class="article-detail">
+      <div class="article-header">
+        <h1>{{ article.title }}</h1>
+        <div class="article-meta">
+          <span class="date">{{ formatDate(article.date) }}</span>
+          <div class="tags">
+            <span v-for="tag in article.tags" :key="tag" class="tag">
+              #{{ tag }}
+            </span>
+          </div>
         </div>
       </div>
+      <div class="article-cover" v-if="article.coverImage">
+        <img :src="article.coverImage" :alt="article.title">
+      </div>
+      <div class="article-content">
+        <MarkdownRenderer :content="markdownContent" :loading="loading" />
+      </div>
     </div>
-    <div class="article-cover" v-if="article.coverImage">
-      <img :src="article.coverImage" :alt="article.title">
-    </div>
-    <div class="article-content">
-      <MarkdownRenderer :content="markdownContent" :loading="loading" />
-    </div>
+    
+    <aside class="article-sidebar">
+      <div class="related-articles">
+        <h3>相关文章</h3>
+        <ul v-if="relatedArticles.length > 0">
+          <li v-for="relatedArticle in relatedArticles" :key="relatedArticle.id">
+            <router-link :to="'/articles/' + relatedArticle.id">
+              {{ relatedArticle.title }}
+              <span class="related-tag">{{ getCommonTag(relatedArticle) }}</span>
+            </router-link>
+          </li>
+        </ul>
+        <div v-else class="no-related">
+          暂无相关文章
+        </div>
+      </div>
+      
+      <div class="popular-tags">
+        <h3>热门标签</h3>
+        <div class="tag-cloud">
+          <router-link 
+            v-for="tag in popularTags" 
+            :key="tag.name" 
+            :to="'/tags/' + tag.name"
+            class="tag-item"
+            :style="{ fontSize: getTagSize(tag.count) }"
+          >
+            #{{ tag.name }} ({{ tag.count }})
+          </router-link>
+        </div>
+      </div>
+    </aside>
   </div>
   <div v-else-if="loading" class="loading">
     正在加载文章...
@@ -27,15 +61,51 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
 const route = useRoute()
+const router = useRouter()
 const article = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const markdownContent = ref('')
+const allArticles = ref([])
+const popularTags = ref([])
+
+// 计算相关文章（共享至少一个标签的文章）
+const relatedArticles = computed(() => {
+  if (!article.value || !allArticles.value.length) return []
+  
+  return allArticles.value
+    .filter(otherArticle => 
+      // 排除当前文章
+      otherArticle.id !== article.value.id && 
+      // 至少有一个共同标签
+      otherArticle.tags.some(tag => article.value.tags.includes(tag))
+    )
+    .sort((a, b) => new Date(b.date) - new Date(a.date)) // 按日期排序
+    .slice(0, 5) // 最多显示5篇
+})
+
+// 获取两篇文章的共同标签（用于显示）
+const getCommonTag = (relatedArticle) => {
+  if (!article.value) return ''
+  
+  const commonTag = relatedArticle.tags.find(tag => 
+    article.value.tags.includes(tag)
+  )
+  
+  return commonTag || ''
+}
+
+// 计算标签大小（根据出现次数）
+const getTagSize = (count) => {
+  const baseSize = 0.9
+  const scale = 0.1
+  return `${baseSize + scale * Math.min(count, 5)}rem`
+}
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('zh-CN', {
@@ -45,6 +115,30 @@ const formatDate = (date) => {
   })
 }
 
+// 加载所有文章的元数据
+const loadAllArticles = async () => {
+  try {
+    const indexResponse = await fetch('/markdown/articles/index.json')
+    const indexData = await indexResponse.json()
+    allArticles.value = indexData.articles
+    
+    // 计算标签统计
+    const tagCounts = {}
+    allArticles.value.forEach(article => {
+      article.tags.forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1
+      })
+    })
+    
+    // 转换为数组并排序
+    popularTags.value = Object.entries(tagCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+  } catch (err) {
+    console.error('加载文章索引失败:', err)
+  }
+}
+
 // 加载文章内容和元数据
 const loadArticle = async (id) => {
   try {
@@ -52,9 +146,7 @@ const loadArticle = async (id) => {
     error.value = null
     
     // 获取文章元数据
-    const indexResponse = await fetch('/markdown/articles/index.json')
-    const indexData = await indexResponse.json()
-    const articleMeta = indexData.articles.find(a => a.id === id)
+    const articleMeta = allArticles.value.find(a => a.id === id)
     
     if (!articleMeta) {
       throw new Error('文章不存在')
@@ -91,6 +183,9 @@ const loadArticle = async (id) => {
 }
 
 onMounted(async () => {
+  // 先加载所有文章元数据
+  await loadAllArticles()
+  
   const articleId = route.params.id
   if (articleId) {
     await loadArticle(articleId)
@@ -106,10 +201,36 @@ watch(() => route.params.id, (newId) => {
 </script>
 
 <style scoped>
-.article-detail {
-  max-width: 800px;
+.article-container {
+  display: flex;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 2rem 1rem;
+  gap: 2rem;
+}
+
+.article-detail {
+  flex: 1;
+  max-width: 800px;
+}
+
+.article-sidebar {
+  width: 300px;
+  position: sticky;
+  top: 2rem;
+  align-self: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .article-container {
+    flex-direction: column;
+  }
+  
+  .article-sidebar {
+    width: 100%;
+    position: static;
+    margin-top: 2rem;
+  }
 }
 
 .article-header {
@@ -165,5 +286,83 @@ watch(() => route.params.id, (newId) => {
 
 .article-content :deep(li) {
   margin-bottom: 0.5rem;
+}
+
+/* 侧边栏样式 */
+.related-articles,
+.popular-tags {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.related-articles h3,
+.popular-tags h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.related-articles ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.related-articles li {
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.related-articles li:last-child {
+  border-bottom: none;
+}
+
+.related-articles a {
+  color: #2c3e50;
+  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.related-articles a:hover {
+  color: #42b883;
+}
+
+.related-tag {
+  font-size: 0.8rem;
+  color: #42b883;
+  background-color: rgba(66, 184, 131, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.no-related {
+  color: #999;
+  font-style: italic;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-item {
+  color: #42b883;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.tag-item:hover {
+  color: #3aa171;
+  transform: scale(1.05);
 }
 </style> 

@@ -31,6 +31,14 @@
       "coverImage": "/images/art/p1.jpeg",
       "tags": ["编程语言", "rust"],
       "excerpt": "rust所有权详解"
+    },
+    {
+      "id": "network-tcp-conn",
+      "title": "tcp半连接队列",
+      "date": "2025-04-06",
+      "coverImage": "/images/art/p1.jpeg",
+      "tags": ["网络", "tcp"],
+      "excerpt": "tcp半连接队列详解"
     }
   ]
 } 

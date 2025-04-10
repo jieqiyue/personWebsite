@@ -1,13 +1,12 @@
 <div align="center">
-   <h1>Hi there, I'm Qiyue <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="25px" style="vertical-align: middle; margin: 0;"> </h1>
+   <h1>Hi there, I'm Qiyue <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="25px" style="display: inline; vertical-align: middle; margin: 0;"> </h1>
 </div>
 
 <p align='center'>
-   <a href="https://space.bilibili.com/383098028"><img style="height: 30px !important; max-height: 30px; width: auto;" src="/images/bilibili.png"></a>&nbsp;&nbsp;
- </p>
+   <a href="https://space.bilibili.com/383098028" style="display: inline-block; width: 98px; height: 32px; background-image: url('/images/bilibili.png'); background-size: contain; background-repeat: no-repeat; background-position: center;"></a>&nbsp;&nbsp;
+</p>
 <div align="center">
-<h3><img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30" style="vertical-align: middle; margin: 0;"> 🙎 Qiyue Jie | 💻 Backend Developer | 🛸 HangZhou , CHINA <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30" style="vertical-align: middle; margin: 0;"></h3>
-
+<h3 style="display: flex; align-items: center; justify-content: center; gap: 6px;"><img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30" style="display: inline; vertical-align: middle; margin: 0;"> 🙎 Qiyue Jie | 💻 Backend Developer | 🛸 HangZhou , CHINA <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30" style="display: inline; vertical-align: middle; margin: 0;"></h3>
 </div>
 
  

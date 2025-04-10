@@ -5,6 +5,7 @@ import Blog from '../views/Blog.vue'
 import ArticleDetail from '../views/ArticleDetail.vue'
 import About from '../views/About.vue'
 import PhotoDetail from '../views/PhotoDetail.vue'
+import TagView from '../views/TagView.vue'
 
 const routes = [
   {
@@ -28,9 +29,14 @@ const routes = [
     component: Blog
   },
   {
-    path: '/blog/:id',
+    path: '/articles/:id',
     name: 'ArticleDetail',
     component: ArticleDetail
+  },
+  {
+    path: '/tags/:tag',
+    name: 'TagView',
+    component: TagView
   },
   {
     path: '/about',
@@ -41,7 +47,15 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    // 页面切换时滚动到顶部
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 export default router 

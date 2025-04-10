@@ -9,7 +9,12 @@
       <div class="article-meta">
         <span class="date">{{ formatDate(article.date) }}</span>
         <span class="tags" v-if="article.tags">
-          <span v-for="tag in article.tags" :key="tag" class="tag">
+          <span 
+            v-for="tag in article.tags" 
+            :key="tag" 
+            class="tag"
+            @click.stop="navigateToTag(tag)"
+          >
             #{{ tag }}
           </span>
         </span>
@@ -39,7 +44,11 @@ const formatDate = (date) => {
 }
 
 const navigateToArticle = () => {
-  router.push(`/blog/${props.article.id}`)
+  router.push(`/articles/${props.article.id}`)
+}
+
+const navigateToTag = (tag) => {
+  router.push(`/tags/${tag}`)
 }
 </script>
 

@@ -98,12 +98,19 @@ details.custom-block summary {
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: block;
-  margin: 1.5rem auto;
+  margin: 1rem auto;
   max-width: 100%;
   height: auto !important;
   object-fit: contain;
-  opacity: 0.2;
-  transition: opacity 0.3s ease;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+/* 行内图片应该是内联元素 */
+.markdown-body p a img {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.25rem;
 }
 
 .markdown-body img.loaded {
@@ -159,4 +166,16 @@ details.custom-block summary {
   .markdown-body img:hover {
     opacity: 1;
   }
+}
+
+/* bilibili图标特定样式 - 使用非常具体的选择器和!important */
+.markdown-body p a[href*="bilibili.com"] img {
+  height: 20px !important;
+  width: auto !important;
+  max-height: 20px !important;
+  max-width: none !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  box-shadow: none !important;
 } 

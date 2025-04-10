@@ -18,6 +18,14 @@
         >
           #{{ tag }}
         </span>
+        <router-link 
+          v-for="tag in allTags" 
+          :key="`link-${tag}`"
+          :to="`/tags/${tag}`"
+          class="tag-link"
+        >
+          查看所有 #{{ tag }} 文章
+        </router-link>
       </div>
     </div>
     <div class="articles-grid">
@@ -32,8 +40,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import ArticleCard from '../components/ArticleCard.vue'
 
+const router = useRouter()
 const searchQuery = ref('')
 const selectedTags = ref([])
 const articles = ref([])
@@ -87,6 +97,11 @@ const toggleTag = (tag) => {
   }
 }
 
+// 导航到标签页
+const navigateToTag = (tag) => {
+  router.push(`/tags/${tag}`)
+}
+
 onMounted(() => {
   loadArticles()
 })
@@ -130,6 +145,10 @@ onMounted(() => {
 .tags span.active {
   background: #42b883;
   color: white;
+}
+
+.tag-link {
+  display: none;
 }
 
 .articles-grid {
