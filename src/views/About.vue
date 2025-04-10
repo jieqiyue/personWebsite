@@ -20,11 +20,11 @@ import { ref } from 'vue'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
 // Markdown文件路径
-const markdownSource = ref('/src/assets/markdown/About.md')
+const markdownSource = ref('/markdown/About.md')
 
 // 编辑链接 - 在实际应用中，这可能是指向CMS或GitHub仓库的链接
 // 这里我们使用相对路径指向文件系统中的Markdown文件
-const editUrl = ref('/src/assets/markdown/About.md')
+const editUrl = ref('/markdown/About.md')
 
 </script>
 

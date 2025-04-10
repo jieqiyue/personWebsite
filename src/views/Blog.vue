@@ -46,7 +46,7 @@ const loadArticles = async () => {
     loading.value = true
     error.value = null
     
-    const response = await fetch('/src/assets/markdown/articles/index.json')
+    const response = await fetch('/markdown/articles/index.json')
     const data = await response.json()
     articles.value = data.articles
   } catch (err) {

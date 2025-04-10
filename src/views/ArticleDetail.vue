@@ -56,7 +56,7 @@ const loadArticle = async (id) => {
     error.value = null
     
     // 获取文章元数据
-    const indexResponse = await fetch('/src/assets/markdown/articles/index.json')
+    const indexResponse = await fetch('/markdown/articles/index.json')
     const indexData = await indexResponse.json()
     const articleMeta = indexData.articles.find(a => a.id === id)
     
@@ -65,7 +65,7 @@ const loadArticle = async (id) => {
     }
 
     // 获取文章内容
-    const contentResponse = await fetch(`/src/assets/markdown/articles/${id}.md`)
+    const contentResponse = await fetch(`/markdown/articles/${id}.md`)
     const content = await contentResponse.text()
     
     // 提取文章内容，设置元数据

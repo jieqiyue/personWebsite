@@ -11,8 +11,8 @@
 import { ref } from 'vue'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
-// Markdown文件路径
-const markdownSource = ref('/src/assets/markdown/Home.md')
+// Markdown文件路径 
+const markdownSource = ref('/markdown/Home.md')
 </script>
 
 <style scoped>

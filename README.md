@@ -34,5 +34,4 @@ npm run build
 ```
 
 ## 许可
-
-MIT
+ MIT
