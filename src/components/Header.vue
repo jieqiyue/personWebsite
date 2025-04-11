@@ -46,6 +46,7 @@ import ThemeSwitcher from './ThemeSwitcher.vue'
 nav {
   display: flex;
   gap: 3rem;
+  user-select: none; 
 }
 
 .header-right {
