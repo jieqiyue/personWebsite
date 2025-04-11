@@ -63,6 +63,14 @@
       "coverImage": "/images/art/p1.jpeg",
       "tags": ["Rust", "编程语言"],
       "excerpt": "Rust中的match和模式匹配和解构详解"
+    },
+    {
+      "id": "epoll-socket",
+      "title": "为什么epoll需要将socket设置为非阻塞",
+      "date": "2025-04-06",
+      "coverImage": "/images/art/p1.jpeg",
+      "tags": ["网络编程", "网络"],
+      "excerpt": "为什么epoll需要将socket设置为非阻塞呢？来看看这篇文章"
     }
   ]
 } 
