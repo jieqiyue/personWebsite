@@ -1,165 +1,66 @@
 <template>
   <div class="theme-switcher">
     <button 
-      class="theme-toggle" 
-      @click="toggleDropdown" 
-      :title="currentThemeName"
+      class="theme-toggle-icon" 
+      @click="cycleTheme" 
+      title="切换主题"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"></circle>
-        <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path>
+      <!-- Half-filled circle icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 18v-16a8 8 0 0 1 0 16z"></path>
       </svg>
-      <span class="theme-label">{{ currentThemeName }}</span>
     </button>
-    <div class="theme-dropdown" v-if="isOpen">
-      <div
-        v-for="(theme, key) in themes"
-        :key="key"
-        class="theme-option"
-        :class="{ active: currentTheme === key }"
-        @click="switchTheme(key)"
-      >
-        <span class="theme-color" :style="{ background: theme.colors.primary }"></span>
-        <span class="theme-name">{{ theme.name }}</span>
-      </div>
-    </div>
+    <!-- Dropdown removed -->
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { /* ref, computed, onMounted, onUnmounted removed */ } from 'vue'
 import { themes, currentTheme, changeTheme } from '../utils/theme'
 
-const isOpen = ref(false)
-
-// 获取当前主题名称
-const currentThemeName = computed(() => {
-  return themes[currentTheme.value]?.name || '主题'
-})
-
-// 切换下拉菜单
-const toggleDropdown = () => {
-  isOpen.value = !isOpen.value
+// Function to cycle through themes
+const cycleTheme = () => {
+  const themeKeys = Object.keys(themes);
+  const currentIndex = themeKeys.indexOf(currentTheme.value);
+  const nextIndex = (currentIndex + 1) % themeKeys.length; // Cycle
+  const nextThemeName = themeKeys[nextIndex];
+  changeTheme(nextThemeName);
 }
 
-// 切换主题
-const switchTheme = (themeName) => {
-  changeTheme(themeName)
-  isOpen.value = false
-}
-
-// 点击外部关闭下拉菜单
-const handleClickOutside = (event) => {
-  const switcher = document.querySelector('.theme-switcher')
-  if (switcher && !switcher.contains(event.target)) {
-    isOpen.value = false
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+// onMounted/onUnmounted for handleClickOutside removed
 </script>
 
 <style scoped>
 .theme-switcher {
   position: relative;
-  z-index: 1000;
+  /* Removed z-index as dropdown is gone, adjust if needed */
 }
 
-.theme-toggle {
-  background: var(--accent);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  min-width: 44px;
-  height: 44px;
-  padding: 0 12px;
+.theme-toggle-icon {
+  background: none; /* Remove background */
+  border: none; /* Remove border */
+  padding: 8px; /* Adjust padding for icon size */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--primary);
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px var(--shadow);
+  color: var(--text); /* Use text color for the icon */
+  transition: color 0.3s ease, transform 0.2s ease;
+  border-radius: 50%; /* Optional: make it circular */
+  width: 36px; /* Adjust size */
+  height: 36px; /* Adjust size */
 }
 
-.theme-toggle:hover {
-  background: var(--surface);
-  box-shadow: 0 3px 8px var(--shadow);
+.theme-toggle-icon:hover {
+  color: var(--primary); /* Change color on hover */
+  transform: scale(1.1); /* Optional: slight scale effect */
+  background-color: rgba(128, 128, 128, 0.1); /* Optional: subtle background on hover */
 }
 
-.theme-label {
-  margin-left: 8px;
-  font-size: 14px;
-  display: none;
+.theme-toggle-icon svg {
+  display: block; /* Ensure SVG behaves predictably */
 }
 
-@media (min-width: 768px) {
-  .theme-label {
-    display: inline;
-  }
-  
-  .theme-toggle {
-    padding: 0 16px;
-  }
-}
+/* Styles for dropdown, theme-label, theme-option, etc. removed */
 
-.theme-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 200px;
-  background: var(--surface);
-  border-radius: 12px;
-  box-shadow: 0 5px 15px var(--shadow);
-  margin-top: 12px;
-  overflow: hidden;
-  animation: fadeIn 0.2s ease;
-  border: 1px solid var(--border);
-}
-
-.theme-option {
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.theme-option:hover {
-  background: var(--accent);
-}
-
-.theme-option.active {
-  background: var(--accent);
-  font-weight: 500;
-}
-
-.theme-color {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  margin-right: 12px;
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 0 1px var(--border);
-}
-
-.theme-name {
-  color: var(--text);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 </style> 

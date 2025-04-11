@@ -21,32 +21,36 @@ import ThemeSwitcher from './ThemeSwitcher.vue'
 <style scoped>
 .site-header {
   padding: 1rem 2rem;
-  background: var(--border);
+  background-color: var(--background-alt);
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 10px var(--shadow);
   width: 100%;
-  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
 }
 
 nav {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  margin-left: 1rem;
 }
 
 a {
@@ -73,5 +77,32 @@ a.router-link-active {
   nav {
     gap: 1rem;
   }
+}
+
+.logo a {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--primary);
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+nav a:hover,
+nav a.router-link-exact-active {
+  color: var(--primary);
 }
 </style> 

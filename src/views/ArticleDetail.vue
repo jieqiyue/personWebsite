@@ -18,6 +18,7 @@
       <div class="article-content">
         <MarkdownRenderer :content="markdownContent" :loading="loading" />
       </div>
+      <Comments :pageTerm="articlePath" />
     </div>
     
     <aside class="article-sidebar">
@@ -51,6 +52,7 @@
         </div>
       </div>
     </aside>
+    <BackToTop />
   </div>
   <div v-else-if="loading" class="loading">
     正在加载文章...
@@ -61,9 +63,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
+import { marked } from 'marked'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism-tomorrow.css'
+import BackToTop from '../components/BackToTop.vue'
+import Comments from '../components/Comments.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -73,6 +80,7 @@ const error = ref(null)
 const markdownContent = ref('')
 const allArticles = ref([])
 const popularTags = ref([])
+const articlePath = ref('')
 
 // 计算相关文章（共享至少一个标签的文章）
 const relatedArticles = computed(() => {
@@ -174,6 +182,11 @@ const loadArticle = async (id) => {
     
     // 保存处理后的Markdown内容
     markdownContent.value = processedContent
+
+    // Highlight code blocks after content is rendered
+    await nextTick(() => {
+      Prism.highlightAll()
+    })
   } catch (err) {
     error.value = '获取文章内容失败，请稍后重试'
     console.error('加载文章失败:', err)

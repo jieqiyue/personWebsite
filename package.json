@@ -15,6 +15,8 @@
     "markdown-it": "^14.1.0",
     "markdown-it-container": "^4.0.0",
     "markdown-it-emoji": "^3.0.0",
+    "marked": "^15.0.8",
+    "prismjs": "^1.30.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
