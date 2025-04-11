@@ -18,7 +18,9 @@
       <div class="article-content">
         <MarkdownRenderer :content="markdownContent" :loading="loading" />
       </div>
-      <Comments :pageTerm="articlePath" />
+      <div class="comments-wrapper">
+        <Comments :pageTerm="articlePath" />
+      </div>
     </div>
     
     <aside class="article-sidebar">
@@ -377,5 +379,13 @@ watch(() => route.params.id, (newId) => {
 .tag-item:hover {
   color: #3aa171;
   transform: scale(1.05);
+}
+
+/* Wrapper for the comments section */
+.comments-wrapper {
+  max-width: 800px; /* Align with .article-detail max-width */
+  margin: 0 auto;  /* Center the wrapper */
+  /* The top margin is handled by Comments.vue's internal .comments-section */
+  padding-bottom: 2rem; /* Add some padding at the very bottom */
 }
 </style> 

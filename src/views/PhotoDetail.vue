@@ -102,6 +102,11 @@
           </div>
         </div>
       </div>
+
+      <!-- Wrap the Comments component -->
+      <div class="comments-wrapper">
+        <Comments :pageTerm="photoPath" />
+      </div>
     </template>
   </div>
 </template>
@@ -109,6 +114,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import BackToTop from '../components/BackToTop.vue'
+import Comments from '../components/Comments.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -117,6 +124,7 @@ const loading = ref(true)
 const error = ref(null)
 const isFullscreen = ref(false)
 const imageLoaded = ref(false)
+const photoPath = ref('')
 
 // 模拟API调用
 const fetchPhotoData = async (id) => {
@@ -124,6 +132,7 @@ const fetchPhotoData = async (id) => {
     loading.value = true
     error.value = null
     imageLoaded.value = false
+    photoPath.value = route.path
     
     // 模拟API延迟
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -461,10 +470,21 @@ onUnmounted(() => {
   }
 }
 
-/* 确保网站页脚不会添加灰色背景和空间 */
-footer, .site-footer {
-  background: transparent !important; /* 强制覆盖任何背景 */
-  padding: 0.5rem !important; /* 最小化内边距 */
-  margin: 0 !important; /* 移除所有外边距 */
+/* Wrapper for the comments section */
+.comments-wrapper {
+  max-width: 800px; /* Set to 800px to match ArticleDetail */
+  margin: 0 auto;  /* Center the wrapper */
+  /* The top margin is handled by Comments.vue's internal .comments-section */
+  padding-bottom: 2rem; /* Add some padding at the very bottom */
+}
+
+/* Ensure the site footer still behaves correctly */
+/* Styles added via JS override this, but good practice */
+::v-deep(.site-footer) {
+  background: transparent !important;
+  padding: 0.5rem 0 !important;
+  margin: 0 !important;
+  border-top: none !important; /* Ensure no extra borders appear */
+  box-shadow: none !important; /* Ensure no extra shadows appear */
 }
 </style> 

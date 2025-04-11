@@ -6,6 +6,7 @@ import ArticleDetail from '../views/ArticleDetail.vue'
 import About from '../views/About.vue'
 import PhotoDetail from '../views/PhotoDetail.vue'
 import TagView from '../views/TagView.vue'
+import FontTestViewer from '../views/FontTestViewer.vue'
 
 const routes = [
   {
@@ -42,6 +43,11 @@ const routes = [
     path: '/about',
     name: 'About',
     component: About
+  },
+  {
+    path: '/font-test',
+    name: 'FontTest',
+    component: FontTestViewer
   }
 ]
 
