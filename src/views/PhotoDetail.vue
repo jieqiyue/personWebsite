@@ -23,7 +23,11 @@
       <!-- 返回按钮独立放置 -->
       <div class="back-navigation">
         <button class="back-button" @click="router.back()">
-          <span>&larr;</span> 返回
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="back-icon">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+          <span class="back-text">返回</span>
         </button>
       </div>
       
@@ -234,6 +238,7 @@ onUnmounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   background-color: var(--background); /* 使用主题变量 */
+  position: relative; /* 确保定位上下文 */
 }
 
 /* 返回按钮独立容器 */
@@ -244,23 +249,49 @@ onUnmounted(() => {
 }
 
 .back-button {
-  padding: 0.5rem 1rem;
-  background: var(--surface); /* 使用主题变量 */
-  border: 1px solid var(--border); /* 添加边框增强可见性 */
-  border-radius: 20px;
+  padding: 0.7rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px var(--shadow); /* 使用主题变量 */
-  color: var(--primary); /* 使用主题变量使文字颜色更加深色 */
-  font-weight: 500; /* 加粗字体 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  color: var(--text);
+  font-weight: 500;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .back-button:hover {
-  background: var(--accent); /* 使用主题变量 */
-  transform: translateX(-5px);
+  background: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.back-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.back-button .back-icon {
+  display: block;
+  color: var(--primary);
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover .back-icon {
+  transform: translateX(-3px);
+}
+
+.back-button .back-text {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 /* 内容容器 */
@@ -270,6 +301,7 @@ onUnmounted(() => {
   gap: 2rem;
   margin-bottom: 0; /* 移除底部外边距 */
   background: transparent; /* 确保无背景 */
+  user-select: none; /* 防止文本选择和光标闪烁 */
 }
 
 /* 加载状态样式 */
@@ -331,6 +363,7 @@ onUnmounted(() => {
   margin-bottom: 0; /* 移除底部外边距 */
   background: none; /* 移除背景色 */
   box-shadow: none; /* 移除阴影 */
+  user-select: none; /* 防止文本选择和光标闪烁 */
 }
 
 .photo-container img {
@@ -341,6 +374,8 @@ onUnmounted(() => {
   cursor: zoom-in;
   transition: all 0.3s ease;
   margin-bottom: 0; /* 确保图片底部没有外边距 */
+  -webkit-user-drag: none; /* 防止拖拽 */
+  user-select: none; /* 防止选择 */
 }
 
 .photo-container img.fullscreen {

@@ -77,11 +77,14 @@ const filteredPhotos = computed(() => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem 0;
+  user-select: none; /* 防止标题文本选择和光标闪烁 */
 }
 
 .portfolio h1 {
   color: var(--text);
   margin-bottom: 1.5rem;
+  user-select: none; /* 特别强调标题不可选择，防止光标闪烁 */
+  cursor: default; /* 确保鼠标悬停时不显示文本光标 */
 }
 
 .categories {

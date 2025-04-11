@@ -49,6 +49,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  
 }
 
 .page-title {
@@ -56,6 +57,7 @@ onMounted(() => {
   margin-bottom: 2rem;
   font-size: 2.5rem;
   color: #2c6e49;
+  user-select: none;    
 }
 
 .markdown-container {
