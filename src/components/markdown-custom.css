@@ -135,11 +135,106 @@ details.custom-block summary {
 .markdown-body pre {
   background-color: #f6f8fa;
   border-radius: 6px;
+  position: relative;
+  overflow: auto;
 }
 
-/* 表格增强 */
-.markdown-body table tr:nth-child(2n) {
-  background-color: #f8f8f8;
+/* 自定义滚动条样式 */
+.markdown-body pre::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.markdown-body pre::-webkit-scrollbar-thumb {
+  background: #c1c9d2;
+  border-radius: 3px;
+}
+
+.markdown-body pre::-webkit-scrollbar-thumb:hover {
+  background: #a8b2bd;
+}
+
+.markdown-body pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 3px;
+}
+
+/* 代码复制按钮样式 */
+.markdown-body pre .code-copy-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.markdown-body pre:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.markdown-body pre .code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.markdown-body pre .code-copy-btn:active {
+  transform: scale(0.95);
+}
+
+.markdown-body pre .code-copy-btn svg {
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+/* 复制成功样式 */
+.markdown-body pre .code-copy-btn.copied {
+  background-color: rgba(66, 184, 131, 0.2);
+  animation: copy-success 0.6s ease;
+}
+
+.markdown-body pre .code-copy-btn.copied svg {
+  color: #42b883;
+}
+
+/* 复制成功提示 */
+.copy-success-tip {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #42b883;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  transform-origin: center bottom;
+}
+
+.copy-success-tip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #42b883;
 }
 
 /* 适应深色模式 */
@@ -151,6 +246,22 @@ details.custom-block summary {
   
   .markdown-body pre {
     background-color: #2d2d2d;
+  }
+  
+  .markdown-body pre .code-copy-btn {
+    background: rgba(60, 60, 60, 0.8);
+  }
+  
+  .markdown-body pre .code-copy-btn:hover {
+    background: rgba(80, 80, 80, 0.95);
+  }
+  
+  .markdown-body pre .code-copy-btn svg {
+    color: #ccc;
+  }
+  
+  .markdown-body pre .code-copy-btn.copied svg {
+    color: #42b883;
   }
   
   .markdown-body table tr:nth-child(2n) {
@@ -166,6 +277,27 @@ details.custom-block summary {
   .markdown-body img:hover {
     opacity: 1;
   }
+  
+  .copy-success-tip {
+    background-color: #42b883;
+    color: #fff;
+  }
+  
+  .copy-success-tip::after {
+    border-top-color: #42b883;
+  }
+  
+  .markdown-body pre::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+  
+  .markdown-body pre::-webkit-scrollbar-thumb:hover {
+    background: #666;
+  }
+  
+  .markdown-body pre::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
 }
 
 /* bilibili图标特定样式 - 使用非常具体的选择器和!important */
@@ -178,4 +310,22 @@ details.custom-block summary {
   vertical-align: middle !important;
   margin: 0 !important;
   box-shadow: none !important;
+}
+
+/* 复制成功动画 */
+@keyframes copy-success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 表格增强 */
+.markdown-body table tr:nth-child(2n) {
+  background-color: #f8f8f8;
 } 
