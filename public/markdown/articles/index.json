@@ -26,10 +26,10 @@
     },
     {
       "id": "rust-onwer",
-      "title": "rust所有权",
+      "title": "Rust所有权",
       "date": "2024-04-06",
       "coverImage": "/images/art/p1.jpeg",
-      "tags": ["编程语言", "rust"],
+      "tags": ["编程语言", "Rust"],
       "excerpt": "rust所有权详解"
     },
     {
@@ -39,6 +39,30 @@
       "coverImage": "/images/art/p1.jpeg",
       "tags": ["网络", "tcp"],
       "excerpt": "tcp半连接队列详解"
+    },
+    {
+      "id": "rust-patten-match",
+      "title": "Rust模式匹配",
+      "date": "2025-04-06",
+      "coverImage": "/images/art/p1.jpeg",
+      "tags": ["Rust", "编程语言"],
+      "excerpt": "Rust模式匹配详解"
+    },
+    {
+      "id": "rust-generic",
+      "title": "Rust泛型",
+      "date": "2025-04-06",
+      "coverImage": "/images/art/p1.jpeg",
+      "tags": ["Rust", "编程语言"],
+      "excerpt": "Rust泛型详解"
+    },
+    {
+      "id": "rust-match",
+      "title": "Rust中的match和模式匹配和解构",
+      "date": "2025-04-06",
+      "coverImage": "/images/art/p1.jpeg",
+      "tags": ["Rust", "编程语言"],
+      "excerpt": "Rust中的match和模式匹配和解构详解"
     }
   ]
 } 
