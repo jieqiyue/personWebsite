@@ -28,18 +28,52 @@
         </router-link>
       </div>
     </div>
+    
+    <!-- 文章列表 -->
     <div class="articles-grid">
       <ArticleCard 
-        v-for="article in filteredArticles" 
+        v-for="article in visibleArticles" 
         :key="article.id" 
         :article="article"
+        class="article-item"
       />
+    </div>
+    
+    <!-- 加载更多按钮 -->
+    <div class="load-more-container" v-if="hasMoreArticles">
+      <button 
+        class="load-more-button" 
+        @click="loadMore" 
+        :disabled="isLoadingMore"
+      >
+        <span v-if="!isLoadingMore">加载更多</span>
+        <span v-else class="loading-spinner"></span>
+      </button>
+    </div>
+    
+    <!-- 全部加载完毕提示 -->
+    <div v-if="!hasMoreArticles && visibleArticles.length > 0" class="all-loaded">
+      <div class="line"></div>
+      <p>已加载全部文章</p>
+      <div class="line"></div>
+    </div>
+    
+    <!-- 无结果提示 -->
+    <div v-if="filteredArticles.length === 0 && !loading" class="no-results">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        <line x1="11" y1="8" x2="11" y2="14"></line>
+        <line x1="8" y1="11" x2="14" y2="11"></line>
+      </svg>
+      <p>没有找到匹配的文章</p>
+      <button @click="resetFilters" class="reset-button">重置筛选条件</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ArticleCard from '../components/ArticleCard.vue'
 
@@ -50,6 +84,11 @@ const articles = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+// 分页相关参数
+const itemsPerPage = 6 // 每次显示的文章数量
+const currentPage = ref(1) // 当前页码
+const isLoadingMore = ref(false) // 是否正在加载更多
+
 // 加载文章列表
 const loadArticles = async () => {
   try {
@@ -58,6 +97,8 @@ const loadArticles = async () => {
     
     const response = await fetch('/markdown/articles/index.json')
     const data = await response.json()
+    
+    // 直接使用API返回的真实数据
     articles.value = data.articles
   } catch (err) {
     error.value = '加载文章列表失败，请稍后重试'
@@ -71,7 +112,7 @@ const loadArticles = async () => {
 const allTags = computed(() => {
   const tags = new Set()
   articles.value.forEach(article => {
-    article.tags.forEach(tag => tags.add(tag))
+    article.tags && article.tags.forEach(tag => tags.add(tag))
   })
   return Array.from(tags)
 })
@@ -82,11 +123,35 @@ const filteredArticles = computed(() => {
                          article.excerpt.toLowerCase().includes(searchQuery.value.toLowerCase())
     
     const matchesTags = selectedTags.value.length === 0 ||
-                       article.tags.some(tag => selectedTags.value.includes(tag))
+                       (article.tags && article.tags.some(tag => selectedTags.value.includes(tag)))
     
     return matchesSearch && matchesTags
   })
 })
+
+// 当前可见的文章列表
+const visibleArticles = computed(() => {
+  const endIndex = currentPage.value * itemsPerPage
+  return filteredArticles.value.slice(0, endIndex)
+})
+
+// 是否还有更多文章可加载
+const hasMoreArticles = computed(() => {
+  return visibleArticles.value.length < filteredArticles.value.length
+})
+
+// 加载更多文章
+const loadMore = () => {
+  if (isLoadingMore.value || !hasMoreArticles.value) return
+  
+  isLoadingMore.value = true
+  
+  // 模拟网络请求延迟
+  setTimeout(() => {
+    currentPage.value++
+    isLoadingMore.value = false
+  }, 500)
+}
 
 const toggleTag = (tag) => {
   const index = selectedTags.value.indexOf(tag)
@@ -97,10 +162,16 @@ const toggleTag = (tag) => {
   }
 }
 
-// 导航到标签页
-const navigateToTag = (tag) => {
-  router.push(`/tags/${tag}`)
+// 重置筛选条件
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedTags.value = []
 }
+
+// 监听筛选条件变化，重置分页
+watch([searchQuery, selectedTags], () => {
+  currentPage.value = 1
+}, { deep: true })
 
 onMounted(() => {
   loadArticles()
@@ -124,27 +195,43 @@ onMounted(() => {
   width: 100%;
   max-width: 400px;
   padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border, #ddd);
   border-radius: 8px;
   margin-bottom: 1rem;
+  background-color: var(--surface, #fff);
+  color: var(--text, #333);
+  transition: all 0.3s ease;
+}
+
+.search input:focus {
+  outline: none;
+  border-color: var(--primary, #42b883);
+  box-shadow: 0 0 0 3px rgba(66, 184, 131, 0.1);
 }
 
 .tags {
   display: flex;
   gap: 0.8rem;
   flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
 .tags span {
   padding: 0.4rem 1rem;
-  background: #f5f5f5;
+  background: var(--accent, #f5f5f5);
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: var(--text, #333);
+}
+
+.tags span:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tags span.active {
-  background: #42b883;
+  background: var(--primary, #42b883);
   color: white;
 }
 
@@ -154,8 +241,139 @@ onMounted(() => {
 
 .articles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
+}
+
+.article-item {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 加载更多按钮 */
+.load-more-container {
+  text-align: center;
+  margin: 3rem 0 2rem;
+}
+
+.load-more-button {
+  padding: 0.8rem 2rem;
+  background-color: var(--primary, #42b883);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.load-more-button:hover:not(:disabled) {
+  background-color: var(--secondary, #3a9f73);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 184, 131, 0.2);
+}
+
+.load-more-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 全部加载完毕提示 */
+.all-loaded {
+  display: flex;
+  align-items: center;
+  color: var(--text-light, #999);
+  margin: 3rem 0;
+  padding: 0 1rem;
+}
+
+.all-loaded .line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--border, #eee);
+  margin: 0 1rem;
+}
+
+.all-loaded p {
+  white-space: nowrap;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* 无搜索结果状态 */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  margin: 2rem 0;
+  color: var(--text-light, #666);
+}
+
+.no-results svg {
+  color: var(--text-light, #999);
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-results p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.reset-button {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--primary, #42b883);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-button:hover {
+  background-color: var(--secondary, #3a9f73);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 184, 131, 0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .articles-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .load-more-button {
+    width: 100%;
+    max-width: 300px;
+  }
 }
 </style> 
