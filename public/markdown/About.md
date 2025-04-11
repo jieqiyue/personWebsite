@@ -29,9 +29,9 @@
 
 ## 📫 联系我
 
-- 📧 Email: photography@example.com
-- 📱 微信: photo_lover
-- 📷 Instagram: @my_photography_journey
+- 📧 Email: 2287061933@qq.com
+- 📱 微信: 保密
+- 📷 Instagram: 保密
 
 ## 🏆 获奖经历
 
