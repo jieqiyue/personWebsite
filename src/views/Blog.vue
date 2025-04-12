@@ -97,6 +97,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ArticleCard from '../components/ArticleCard.vue'
 import { estimateReadingTime, formatReadingTime } from '../utils/article'
+import { getArticles } from '../stores/articleCache' // 引入缓存模块
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -116,16 +117,14 @@ const loadArticles = async () => {
     loading.value = true
     error.value = null
     
-    const response = await fetch('/markdown/articles/index.json')
-    const data = await response.json()
+    // 使用缓存模块获取文章
+    const articleData = await getArticles();
+    articles.value = articleData;
     
-    // 直接使用API返回的真实数据
-    articles.value = data.articles
-    
-    // 计算每篇文章的阅读时间
-    await addReadingTimes()
+    // 计算每篇文章的阅读时间（优化：只计算可见部分）
+    await addReadingTimes(articles.value.slice(0, itemsPerPage));
   } catch (err) {
-    error.value = '加载文章列表失败，请稍后重试'
+    error.value = typeof err === 'string' ? err : '加载文章列表失败，请稍后重试';
     console.error('加载文章列表失败:', err)
     articles.value = []
   } finally {
@@ -133,12 +132,17 @@ const loadArticles = async () => {
   }
 }
 
-// 为文章列表计算阅读时间
-const addReadingTimes = async () => {
-  // 并行请求前5篇文章的内容以计算阅读时间
-  const articlesToProcess = articles.value.slice(0, 5)
+// 为文章列表计算阅读时间（按需计算）
+const addReadingTimes = async (articlesToProcess) => {
+  // 查找需要计算阅读时间的文章
+  const articlesNeedingTime = articlesToProcess.filter(a => !a.readingTime);
   
-  await Promise.all(articlesToProcess.map(async (article) => {
+  if (articlesNeedingTime.length === 0) return;
+  
+  console.log(`正在为 ${articlesNeedingTime.length} 篇文章计算阅读时间`);
+  
+  // 并行请求内容
+  await Promise.all(articlesNeedingTime.map(async (article) => {
     try {
       // 尝试获取文章内容
       const response = await fetch(`/markdown/articles/${article.id}.md`)
@@ -158,10 +162,12 @@ const addReadingTimes = async () => {
       article.readingTime = formatReadingTime(minutes)
     } catch (error) {
       console.error(`无法获取文章 ${article.id} 的内容:`, error)
+      // 出错时设置默认值
+      article.readingTime = formatReadingTime(1); // 默认1分钟
     }
   }))
   
-  // 为剩余文章设置估计阅读时间，基于摘要长度
+  // 为其他未处理的文章设置基于摘要的估计值
   articles.value.forEach(article => {
     if (!article.readingTime) {
       // 基于摘要的粗略估计
@@ -194,7 +200,12 @@ const filteredArticles = computed(() => {
 // 当前可见的文章列表
 const visibleArticles = computed(() => {
   const endIndex = currentPage.value * itemsPerPage
-  return filteredArticles.value.slice(0, endIndex)
+  const visible = filteredArticles.value.slice(0, endIndex)
+  
+  // 当可见文章变化时，按需计算阅读时间
+  addReadingTimes(visible.slice(visible.length - itemsPerPage));
+  
+  return visible
 })
 
 // 是否还有更多文章可加载
@@ -211,6 +222,7 @@ const loadMore = () => {
   // 模拟网络请求延迟
   setTimeout(() => {
     currentPage.value++
+    // visibleArticles计算属性会触发阅读时间计算
     isLoadingMore.value = false
   }, 500)
 }

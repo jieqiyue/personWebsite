@@ -83,6 +83,7 @@ import 'prismjs/themes/prism-tomorrow.css'
 import BackToTop from '../components/BackToTop.vue'
 import Comments from '../components/Comments.vue'
 import { estimateReadingTime, formatReadingTime } from '../utils/article'
+import { getArticles } from '../stores/articleCache' // 引入缓存模块
 
 const route = useRoute()
 const router = useRouter()
@@ -90,7 +91,7 @@ const article = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const markdownContent = ref('')
-const allArticles = ref([])
+const allArticles = ref([]) // 缓存的文章列表
 const popularTags = ref([])
 const articlePath = ref('')
 
@@ -103,6 +104,7 @@ const relatedArticles = computed(() => {
       // 排除当前文章
       otherArticle.id !== article.value.id && 
       // 至少有一个共同标签
+      otherArticle.tags && article.value.tags && // 确保 tags 存在
       otherArticle.tags.some(tag => article.value.tags.includes(tag))
     )
     .sort((a, b) => new Date(b.date) - new Date(a.date)) // 按日期排序
@@ -111,7 +113,7 @@ const relatedArticles = computed(() => {
 
 // 获取两篇文章的共同标签（用于显示）
 const getCommonTag = (relatedArticle) => {
-  if (!article.value) return ''
+  if (!article.value || !relatedArticle.tags || !article.value.tags) return ''
   
   const commonTag = relatedArticle.tags.find(tag => 
     article.value.tags.includes(tag)
@@ -135,51 +137,55 @@ const formatDate = (date) => {
   })
 }
 
-// 加载所有文章的元数据
-const loadAllArticles = async () => {
+// 加载所有文章的元数据 (使用缓存)
+const loadAllArticlesMetadata = async () => {
   try {
-    const indexResponse = await fetch('/markdown/articles/index.json')
-    const indexData = await indexResponse.json()
-    allArticles.value = indexData.articles
+    const articlesData = await getArticles(); // 从缓存获取
+    allArticles.value = articlesData;
     
     // 计算标签统计
-    const tagCounts = {}
-    allArticles.value.forEach(article => {
-      article.tags.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1
-      })
-    })
+    calculatePopularTags();
     
-    // 转换为数组并排序
-    popularTags.value = Object.entries(tagCounts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-    
-    // 为所有文章添加阅读时间估计
-    if (allArticles.value.length > 0) {
-      await addReadingTimeEstimations();
-    }
+    // 为所有文章添加阅读时间估计 (如果需要)
+    await addReadingTimeEstimations(allArticles.value);
   } catch (err) {
     console.error('加载文章索引失败:', err)
   }
 }
 
-// 为所有文章添加阅读时间估计
-const addReadingTimeEstimations = async () => {
-  await Promise.all(allArticles.value.map(async (article) => {
+// 计算热门标签
+const calculatePopularTags = () => {
+  const tagCounts = {}
+  allArticles.value.forEach(article => {
+    if (article.tags) { // 确保tags存在
+      article.tags.forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1
+      })
+    }
+  })
+  
+  // 转换为数组并排序
+  popularTags.value = Object.entries(tagCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+}
+
+// 为文章添加阅读时间估计 (需要时计算)
+const addReadingTimeEstimations = async (articlesToProcess) => {
+  const articlesNeedingTime = articlesToProcess.filter(a => !a.readingTime);
+  if (articlesNeedingTime.length === 0) return;
+  
+  await Promise.all(articlesNeedingTime.map(async (article) => {
     try {
-      // 如果文章内容已缓存，直接使用缓存计算
       if (article.cachedContent) {
         const minutes = estimateReadingTime(article.cachedContent);
         article.readingTime = formatReadingTime(minutes);
         return;
       }
       
-      // 否则获取文章内容
       const response = await fetch(`/markdown/articles/${article.id}.md`);
       const content = await response.text();
       
-      // 提取正文内容（去除YAML前缀）
       let processedContent = content;
       if (content.trim().startsWith('---')) {
         const secondSeparatorIndex = content.indexOf('---', 3);
@@ -188,14 +194,12 @@ const addReadingTimeEstimations = async () => {
         }
       }
       
-      // 缓存处理后的内容
       article.cachedContent = processedContent;
-      
-      // 计算阅读时间
       const minutes = estimateReadingTime(processedContent);
       article.readingTime = formatReadingTime(minutes);
     } catch (error) {
-      console.error(`无法获取文章 ${article.id} 的内容:`, error);
+      console.error(`无法获取文章 ${article.id} 的内容或计算阅读时间:`, error);
+      article.readingTime = formatReadingTime(1); // 默认值
     }
   }));
 }
@@ -206,7 +210,12 @@ const loadArticle = async (id) => {
     loading.value = true
     error.value = null
     
-    // 获取文章元数据
+    // 确保文章列表已加载
+    if (allArticles.value.length === 0) {
+      await loadAllArticlesMetadata();
+    }
+    
+    // 从缓存中查找文章元数据
     const articleMeta = allArticles.value.find(a => a.id === id)
     
     if (!articleMeta) {
@@ -218,28 +227,20 @@ const loadArticle = async (id) => {
     const content = await contentResponse.text()
     
     // 提取文章内容，设置元数据
-    article.value = {
-      ...articleMeta
-    }
+    article.value = { ...articleMeta } // 从缓存数据创建
     
-    // 如果内容以---开头，说明存在YAML前置元数据
     let processedContent = content
     if (content.trim().startsWith('---')) {
-      // 寻找第二个---分隔符，YAML前置元数据在两个---之间
       const secondSeparatorIndex = content.indexOf('---', 3)
       if (secondSeparatorIndex !== -1) {
-        // 提取---之后的实际内容
         processedContent = content.substring(secondSeparatorIndex + 3).trim()
       }
     }
     
-    // 缓存处理后的内容
     article.value.cachedContent = processedContent;
-    
-    // 保存处理后的Markdown内容
     markdownContent.value = processedContent
     
-    // 计算阅读时间（如果尚未计算）
+    // 计算当前文章阅读时间（如果缓存中没有）
     if (!article.value.readingTime) {
       const minutes = estimateReadingTime(processedContent);
       article.value.readingTime = formatReadingTime(minutes);
@@ -250,7 +251,7 @@ const loadArticle = async (id) => {
       Prism.highlightAll()
     })
   } catch (err) {
-    error.value = '获取文章内容失败，请稍后重试'
+    error.value = typeof err === 'string' ? err : '获取文章内容失败，请稍后重试'
     console.error('加载文章失败:', err)
   } finally {
     loading.value = false
@@ -258,8 +259,8 @@ const loadArticle = async (id) => {
 }
 
 onMounted(async () => {
-  // 先加载所有文章元数据
-  await loadAllArticles()
+  // 先加载所有文章元数据 (如果缓存不存在)
+  await loadAllArticlesMetadata()
   
   const articleId = route.params.id
   if (articleId) {

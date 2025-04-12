@@ -58,6 +58,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { getArticles } from '../stores/articleCache' // 引入缓存模块
 
 const route = useRoute()
 const router = useRouter()
@@ -70,7 +71,7 @@ const taggedArticles = computed(() => {
   if (!tag.value) return []
   
   return articles.value
-    .filter(article => article.tags.includes(tag.value))
+    .filter(article => article.tags && article.tags.includes(tag.value)) // 添加检查，确保tags存在
     .sort((a, b) => new Date(b.date) - new Date(a.date)) // 按日期降序排序
 })
 
@@ -82,13 +83,13 @@ const formatDate = (date) => {
   })
 }
 
-// 加载所有文章
+// 加载所有文章（使用缓存）
 const loadArticles = async () => {
   try {
     loading.value = true
-    const response = await fetch('/markdown/articles/index.json')
-    const data = await response.json()
-    articles.value = data.articles
+    // 使用缓存模块获取文章
+    const articleData = await getArticles();
+    articles.value = articleData
   } catch (error) {
     console.error('加载文章失败:', error)
   } finally {
@@ -110,9 +111,9 @@ onMounted(() => {
   loadArticles()
 })
 
-// 监听路由变化
+// 监听路由变化，确保在路由参数变化时，如果文章列表为空则加载
 watch(() => route.params.tag, (newTag) => {
-  if (newTag && !articles.value.length) {
+  if (newTag && articles.value.length === 0) { 
     loadArticles()
   }
 })
