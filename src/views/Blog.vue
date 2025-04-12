@@ -96,6 +96,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ArticleCard from '../components/ArticleCard.vue'
+import { estimateReadingTime, formatReadingTime } from '../utils/article'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -120,6 +121,9 @@ const loadArticles = async () => {
     
     // 直接使用API返回的真实数据
     articles.value = data.articles
+    
+    // 计算每篇文章的阅读时间
+    await addReadingTimes()
   } catch (err) {
     error.value = '加载文章列表失败，请稍后重试'
     console.error('加载文章列表失败:', err)
@@ -127,6 +131,44 @@ const loadArticles = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 为文章列表计算阅读时间
+const addReadingTimes = async () => {
+  // 并行请求前5篇文章的内容以计算阅读时间
+  const articlesToProcess = articles.value.slice(0, 5)
+  
+  await Promise.all(articlesToProcess.map(async (article) => {
+    try {
+      // 尝试获取文章内容
+      const response = await fetch(`/markdown/articles/${article.id}.md`)
+      const content = await response.text()
+      
+      // 提取正文内容
+      let processedContent = content
+      if (content.trim().startsWith('---')) {
+        const secondSeparatorIndex = content.indexOf('---', 3)
+        if (secondSeparatorIndex !== -1) {
+          processedContent = content.substring(secondSeparatorIndex + 3).trim()
+        }
+      }
+      
+      // 计算阅读时间
+      const minutes = estimateReadingTime(processedContent)
+      article.readingTime = formatReadingTime(minutes)
+    } catch (error) {
+      console.error(`无法获取文章 ${article.id} 的内容:`, error)
+    }
+  }))
+  
+  // 为剩余文章设置估计阅读时间，基于摘要长度
+  articles.value.forEach(article => {
+    if (!article.readingTime) {
+      // 基于摘要的粗略估计
+      const minutes = Math.max(1, Math.round(article.excerpt.length / 500))
+      article.readingTime = formatReadingTime(minutes)
+    }
+  })
 }
 
 const allTags = computed(() => {

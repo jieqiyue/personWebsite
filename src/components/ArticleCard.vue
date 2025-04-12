@@ -7,7 +7,16 @@
       <h3 class="article-title">{{ article.title }}</h3>
       <p class="article-excerpt">{{ article.excerpt }}</p>
       <div class="article-meta">
-        <span class="date">{{ formatDate(article.date) }}</span>
+        <div class="meta-left">
+          <span class="date">{{ formatDate(article.date) }}</span>
+          <span class="reading-time" v-if="article.readingTime">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {{ article.readingTime }}
+          </span>
+        </div>
         <span class="tags" v-if="article.tags">
           <span 
             v-for="tag in article.tags" 
@@ -26,6 +35,7 @@
 <script setup>
 import { defineProps } from 'vue'
 import { useRouter } from 'vue-router'
+import { formatReadingTime } from '../utils/article'
 
 const router = useRouter()
 const props = defineProps({
@@ -121,7 +131,25 @@ const navigateToTag = (tag) => {
   color: var(--text-light, #888);
   margin-top: auto;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.8rem;
+}
+
+.meta-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.reading-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-light, #888);
+}
+
+.reading-time svg {
+  color: var(--primary, #42b883);
 }
 
 .tags {
@@ -167,10 +195,7 @@ const navigateToTag = (tag) => {
   .article-meta {
     flex-direction: column;
     align-items: flex-start;
-  }
-  
-  .date {
-    margin-bottom: 0.4rem;
+    gap: 0.6rem;
   }
 }
 

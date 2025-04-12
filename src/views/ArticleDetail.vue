@@ -1,10 +1,19 @@
 <template>
   <div class="article-container" v-if="article">
+    <!-- 已在App.vue中添加了进度条，此处移除 -->
+    
     <div class="article-detail">
       <div class="article-header">
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
           <span class="date">{{ formatDate(article.date) }}</span>
+          <span class="reading-time" v-if="article.readingTime">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {{ article.readingTime }}
+          </span>
           <div class="tags">
             <span v-for="tag in article.tags" :key="tag" class="tag">
               #{{ tag }}
@@ -73,6 +82,7 @@ import Prism from 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'
 import BackToTop from '../components/BackToTop.vue'
 import Comments from '../components/Comments.vue'
+import { estimateReadingTime, formatReadingTime } from '../utils/article'
 
 const route = useRoute()
 const router = useRouter()
@@ -144,9 +154,50 @@ const loadAllArticles = async () => {
     popularTags.value = Object.entries(tagCounts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
+    
+    // 为所有文章添加阅读时间估计
+    if (allArticles.value.length > 0) {
+      await addReadingTimeEstimations();
+    }
   } catch (err) {
     console.error('加载文章索引失败:', err)
   }
+}
+
+// 为所有文章添加阅读时间估计
+const addReadingTimeEstimations = async () => {
+  await Promise.all(allArticles.value.map(async (article) => {
+    try {
+      // 如果文章内容已缓存，直接使用缓存计算
+      if (article.cachedContent) {
+        const minutes = estimateReadingTime(article.cachedContent);
+        article.readingTime = formatReadingTime(minutes);
+        return;
+      }
+      
+      // 否则获取文章内容
+      const response = await fetch(`/markdown/articles/${article.id}.md`);
+      const content = await response.text();
+      
+      // 提取正文内容（去除YAML前缀）
+      let processedContent = content;
+      if (content.trim().startsWith('---')) {
+        const secondSeparatorIndex = content.indexOf('---', 3);
+        if (secondSeparatorIndex !== -1) {
+          processedContent = content.substring(secondSeparatorIndex + 3).trim();
+        }
+      }
+      
+      // 缓存处理后的内容
+      article.cachedContent = processedContent;
+      
+      // 计算阅读时间
+      const minutes = estimateReadingTime(processedContent);
+      article.readingTime = formatReadingTime(minutes);
+    } catch (error) {
+      console.error(`无法获取文章 ${article.id} 的内容:`, error);
+    }
+  }));
 }
 
 // 加载文章内容和元数据
@@ -182,8 +233,17 @@ const loadArticle = async (id) => {
       }
     }
     
+    // 缓存处理后的内容
+    article.value.cachedContent = processedContent;
+    
     // 保存处理后的Markdown内容
     markdownContent.value = processedContent
+    
+    // 计算阅读时间（如果尚未计算）
+    if (!article.value.readingTime) {
+      const minutes = estimateReadingTime(processedContent);
+      article.value.readingTime = formatReadingTime(minutes);
+    }
 
     // Highlight code blocks after content is rendered
     await nextTick(() => {
@@ -257,11 +317,25 @@ watch(() => route.params.id, (newId) => {
   gap: 1rem;
   color: #666;
   margin-top: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.reading-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-light, #666);
+}
+
+.reading-time svg {
+  color: var(--primary, #42b883);
 }
 
 .tags {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .tag {
@@ -387,5 +461,51 @@ watch(() => route.params.id, (newId) => {
   margin: 0 auto;  /* Center the wrapper */
   /* The top margin is handled by Comments.vue's internal .comments-section */
   padding-bottom: 2rem; /* Add some padding at the very bottom */
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .article-meta {
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+  }
+  
+  .article-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .article-cover {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .related-articles,
+  .popular-tags {
+    background-color: var(--surface, #2a2a2a);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .related-articles h3,
+  .popular-tags h3 {
+    color: var(--text, #e0e0e0);
+    border-bottom-color: var(--border, #444);
+  }
+  
+  .related-articles li {
+    border-bottom-color: var(--border, #444);
+  }
+  
+  .related-articles a {
+    color: var(--text, #e0e0e0);
+  }
+  
+  .related-articles a:hover {
+    color: var(--primary, #42b883);
+  }
+  
+  .no-related {
+    color: var(--text-light, #888);
+  }
 }
 </style> 
