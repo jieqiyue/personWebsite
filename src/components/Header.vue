@@ -8,6 +8,7 @@
         <router-link to="/about">关于</router-link>
       </nav>
       <div class="header-right">
+        <QuickSearch />
         <ThemeSwitcher />
       </div>
     </div>
@@ -16,6 +17,7 @@
 
 <script setup>
 import ThemeSwitcher from './ThemeSwitcher.vue'
+import QuickSearch from './QuickSearch.vue'
 </script>
 
 <style scoped>
