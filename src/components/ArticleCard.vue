@@ -99,6 +99,7 @@ const navigateToTag = (tag) => {
   font-size: 1.25rem;
   color: var(--text, #333);
   transition: color 0.3s ease;
+  line-height: 1.4;
 }
 
 .article-card:hover .article-title {
@@ -119,6 +120,8 @@ const navigateToTag = (tag) => {
   font-size: 0.875rem;
   color: var(--text-light, #888);
   margin-top: auto;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .tags {
@@ -135,6 +138,40 @@ const navigateToTag = (tag) => {
 .tag:hover {
   color: var(--secondary, #1a4d33);
   transform: translateY(-1px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .article-content {
+    padding: 1.2rem;
+  }
+  
+  .article-title {
+    font-size: 1.2rem;
+  }
+  
+  .article-excerpt {
+    font-size: 0.95rem;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .article-image {
+    height: 180px;
+  }
+  
+  .article-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .date {
+    margin-bottom: 0.4rem;
+  }
 }
 
 /* 适配深色模式 */

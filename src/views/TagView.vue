@@ -1,6 +1,16 @@
 <template>
   <div class="tag-view">
-    <h1 class="tag-title">#{{ tag }}</h1>
+    <div class="tag-header">
+      <button class="back-button" @click="goBack">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"></path>
+          <path d="M12 19l-7-7 7-7"></path>
+        </svg>
+        <span>返回</span>
+      </button>
+      
+      <h1 class="tag-title">#{{ tag }}</h1>
+    </div>
     
     <div class="articles-count">
       找到 {{ taggedArticles.length }} 篇相关文章
@@ -29,17 +39,28 @@
       </div>
     </div>
     
+    <div v-else-if="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>正在加载文章...</p>
+    </div>
+    
     <div v-else class="no-articles">
-      没有找到标签为 "{{ tag }}" 的文章
+      <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"></path>
+        <circle cx="12" cy="12" r="10"></circle>
+      </svg>
+      <p>没有找到标签为 <strong>"{{ tag }}"</strong> 的文章</p>
+      <button class="browse-all-button" @click="goToBlog">浏览所有文章</button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const tag = computed(() => route.params.tag || '')
 const articles = ref([])
 const loading = ref(false)
@@ -75,6 +96,16 @@ const loadArticles = async () => {
   }
 }
 
+// 返回上一页
+const goBack = () => {
+  router.back()
+}
+
+// 前往博客页面
+const goToBlog = () => {
+  router.push('/blog')
+}
+
 onMounted(() => {
   loadArticles()
 })
@@ -94,14 +125,42 @@ watch(() => route.params.tag, (newTag) => {
   padding: 2rem 1rem;
 }
 
+.tag-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent, #f5f5f5);
+  border: none;
+  border-radius: 8px;
+  color: var(--text, #333);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: var(--primary, #42b883);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 .tag-title {
   font-size: 2.5rem;
-  color: #42b883;
-  margin-bottom: 1rem;
+  color: var(--primary, #42b883);
+  margin: 0;
 }
 
 .articles-count {
-  color: #666;
+  color: var(--text-light, #666);
   margin-bottom: 2rem;
   font-size: 1.1rem;
 }
@@ -113,7 +172,7 @@ watch(() => route.params.tag, (newTag) => {
 }
 
 .article-card {
-  background: #fff;
+  background: var(--surface, #fff);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -140,7 +199,7 @@ watch(() => route.params.tag, (newTag) => {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.5rem;
-  color: #2c3e50;
+  color: var(--text, #2c3e50);
 }
 
 .article-meta {
@@ -148,33 +207,35 @@ watch(() => route.params.tag, (newTag) => {
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .date {
-  color: #666;
+  color: var(--text-light, #666);
   font-size: 0.9rem;
 }
 
 .tags {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .tag {
   font-size: 0.8rem;
-  color: #42b883;
+  color: var(--primary, #42b883);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   background-color: rgba(66, 184, 131, 0.1);
 }
 
 .tag.active {
-  color: #fff;
-  background-color: #42b883;
+  color: white;
+  background-color: var(--primary, #42b883);
 }
 
 .excerpt {
-  color: #666;
+  color: var(--text-light, #666);
   margin: 0;
   line-height: 1.6;
 }
@@ -189,13 +250,74 @@ watch(() => route.params.tag, (newTag) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.article-card:hover .article-image img {
+  transform: scale(1.05);
 }
 
 .no-articles {
   text-align: center;
-  color: #666;
+  color: var(--text-light, #666);
   padding: 3rem 0;
-  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.no-articles svg {
+  color: var(--text-light, #999);
+  opacity: 0.5;
+  margin-bottom: 1rem;
+}
+
+.no-articles p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.browse-all-button {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  background-color: var(--primary, #42b883);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.browse-all-button:hover {
+  background-color: var(--secondary, #3a9f73);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  color: var(--text-light, #666);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary, #42b883);
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
@@ -206,6 +328,19 @@ watch(() => route.params.tag, (newTag) => {
   .article-image {
     width: 100%;
     height: 180px;
+  }
+  
+  .tag-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .tag-title {
+    font-size: 2rem;
+  }
+  
+  .browse-all-button {
+    width: 100%;
   }
 }
 </style> 

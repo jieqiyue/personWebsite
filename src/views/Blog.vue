@@ -30,13 +30,19 @@
     </div>
     
     <!-- 文章列表 -->
-    <div class="articles-grid">
+    <div class="articles-grid" v-if="filteredArticles.length > 0">
       <ArticleCard 
         v-for="article in visibleArticles" 
         :key="article.id" 
         :article="article"
         class="article-item"
       />
+    </div>
+    
+    <!-- 加载中状态 -->
+    <div v-if="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>正在加载文章...</p>
     </div>
     
     <!-- 加载更多按钮 -->
@@ -60,14 +66,28 @@
     
     <!-- 无结果提示 -->
     <div v-if="filteredArticles.length === 0 && !loading" class="no-results">
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        <line x1="11" y1="8" x2="11" y2="14"></line>
-        <line x1="8" y1="11" x2="14" y2="11"></line>
-      </svg>
-      <p>没有找到匹配的文章</p>
-      <button @click="resetFilters" class="reset-button">重置筛选条件</button>
+      <div class="no-results-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="11" y1="8" x2="11" y2="14"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+      </div>
+      <h2 class="no-results-title">没有找到匹配的文章</h2>
+      <p class="no-results-message">
+        {{ getNoResultsMessage() }}
+      </p>
+      <div class="search-tips">
+        <h4>搜索技巧：</h4>
+        <ul>
+          <li>检查关键词拼写是否正确</li>
+          <li>尝试使用不同的关键词</li>
+          <li>使用更通用的关键词</li>
+          <li>减少标签筛选条件</li>
+        </ul>
+      </div>
+      <button @click="resetFilters" class="reset-button">重置所有筛选条件</button>
     </div>
   </div>
 </template>
@@ -168,6 +188,19 @@ const resetFilters = () => {
   selectedTags.value = []
 }
 
+// 根据筛选条件生成无结果消息
+const getNoResultsMessage = () => {
+  if (searchQuery.value && selectedTags.value.length > 0) {
+    return `没有找到包含"${searchQuery.value}"且标签为"${selectedTags.value.join('、')}"的文章`;
+  } else if (searchQuery.value) {
+    return `没有找到包含"${searchQuery.value}"的文章`;
+  } else if (selectedTags.value.length > 0) {
+    return `没有找到标签为"${selectedTags.value.join('、')}"的文章`;
+  } else {
+    return "没有找到任何文章";
+  }
+}
+
 // 监听筛选条件变化，重置分页
 watch([searchQuery, selectedTags], () => {
   currentPage.value = 1
@@ -183,7 +216,7 @@ onMounted(() => {
 .blog {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 2rem 1rem;
   user-select: none; 
 }
 
@@ -335,27 +368,72 @@ onMounted(() => {
   min-height: 300px;
   margin: 2rem 0;
   color: var(--text-light, #666);
+  animation: fadeIn 0.5s ease;
 }
 
-.no-results svg {
+.no-results-icon {
+  margin-bottom: 1.5rem;
   color: var(--text-light, #999);
-  margin-bottom: 1rem;
-  opacity: 0.5;
+  opacity: 0.6;
+  animation: pulse 3s infinite ease-in-out;
 }
 
-.no-results p {
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.no-results-title {
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  color: var(--text, #333);
+}
+
+.no-results-message {
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.search-tips {
+  background-color: var(--accent, #f5f5f5);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 450px;
+  border-left: 4px solid var(--primary, #42b883);
+}
+
+.search-tips h4 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  color: var(--text, #333);
+}
+
+.search-tips ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: var(--text-light, #666);
+}
+
+.search-tips li {
+  margin-bottom: 0.5rem;
+}
+
+.search-tips li:last-child {
+  margin-bottom: 0;
 }
 
 .reset-button {
-  padding: 0.6rem 1.2rem;
+  padding: 0.8rem 1.5rem;
   background-color: var(--primary, #42b883);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
 .reset-button:hover {
@@ -364,16 +442,110 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(66, 184, 131, 0.2);
 }
 
+/* 加载中状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  color: var(--text-light, #666);
+  text-align: center;
+}
+
+.loading-container .spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary, #42b883);
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+.loading-container p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .blog {
+    padding: 1rem;
+  }
+  
   .articles-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
   
+  .search input {
+    max-width: 100%;
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+  
   .load-more-button {
     width: 100%;
     max-width: 300px;
+  }
+  
+  .tags {
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  
+  .tags span {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  
+  .all-loaded {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .all-loaded .line {
+    width: 80%;
+    margin: 0;
+  }
+  
+  .search-tips {
+    padding: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .reset-button {
+    width: 100%;
+  }
+}
+
+/* 针对超小屏幕的优化 */
+@media (max-width: 480px) {
+  .blog h1 {
+    font-size: 1.8rem;
+  }
+  
+  .search input {
+    padding: 0.7rem;
+  }
+  
+  .tags span {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  
+  .load-more-button {
+    font-size: 0.9rem;
+    min-height: 42px;
+  }
+  
+  .no-results-title {
+    font-size: 1.3rem;
+  }
+  
+  .no-results-message {
+    font-size: 1rem;
   }
 }
 </style> 
