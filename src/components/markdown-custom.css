@@ -93,17 +93,14 @@ details.custom-block summary {
   background-color: var(--color-border);
 }
 
-/* 增强图片显示 */
+/* 优化图片在Markdown内容中的显示 */
 .markdown-body img {
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: block;
-  margin: 1rem auto;
   max-width: 100%;
-  height: auto !important;
-  object-fit: contain;
-  opacity: 1;
-  transition: all 0.3s ease;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 行内图片应该是内联元素 */
@@ -237,7 +234,7 @@ details.custom-block summary {
   border-top: 5px solid #42b883;
 }
 
-/* 适应深色模式 */
+/* 让图片在暗色主题下更加柔和 */
 @media (prefers-color-scheme: dark) {
   .markdown-body {
     color-scheme: dark;
@@ -269,13 +266,8 @@ details.custom-block summary {
   }
   
   .markdown-body img {
-    opacity: 0.9;
-    transition: opacity 0.3s ease;
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-  
-  .markdown-body img:hover {
-    opacity: 1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    filter: brightness(0.95);
   }
   
   .copy-success-tip {

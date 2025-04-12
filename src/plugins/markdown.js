@@ -41,9 +41,9 @@ md.renderer.rules.image = function (tokens, idx, options, env, self) {
     token.attrs[srcIndex][1] = src;
   }
   
-  // 为图片添加加载错误处理
+  // 为图片添加点击查看大图功能和加载错误处理
   const imgHtml = defaultRender(tokens, idx, options, env, self);
-  return imgHtml.replace('<img', '<img loading="lazy" onload="this.classList.add(\'loaded\')" onerror="this.classList.add(\'error\'); this.setAttribute(\'data-error-src\', this.src); this.alt=\'图片加载失败: \' + this.alt"');
+  return imgHtml.replace('<img', '<img class="zoomable-image" loading="lazy" onload="this.classList.add(\'loaded\')" onerror="this.classList.add(\'error\'); this.setAttribute(\'data-error-src\', this.src); this.alt=\'图片加载失败: \' + this.alt"');
 };
 
 // 使用emoji插件，配置自定义表情符号快捷方式

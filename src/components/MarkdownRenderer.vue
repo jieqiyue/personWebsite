@@ -1,5 +1,14 @@
 <template>
-  <div class="markdown-body" v-html="renderedContent" ref="markdownBody"></div>
+  <div>
+    <div class="markdown-body" v-html="renderedContent" ref="markdownBody"></div>
+    <ImageViewer 
+      v-if="previewVisible" 
+      :visible="previewVisible" 
+      :imageSrc="previewImageSrc" 
+      :imageAlt="previewImageAlt" 
+      @close="closePreview"
+    />
+  </div>
 </template>
 
 <script>
@@ -9,9 +18,13 @@ import 'highlight.js/styles/github.css'
 import 'github-markdown-css/github-markdown.css'
 import './markdown-custom.css'
 import ClipboardJS from 'clipboard'
+import ImageViewer from './ImageViewer.vue'
 
 export default {
   name: 'MarkdownRenderer',
+  components: {
+    ImageViewer
+  },
   props: {
     content: {
       type: String,
@@ -25,6 +38,11 @@ export default {
   setup(props) {
     const markdownBody = ref(null);
     let clipboardInstance = null;
+    
+    // 图片预览状态
+    const previewVisible = ref(false);
+    const previewImageSrc = ref('');
+    const previewImageAlt = ref('');
     
     const renderedContent = computed(() => {
       if (props.loading) {
@@ -128,15 +146,65 @@ export default {
       });
     };
     
-    // 监听内容变化，重新设置复制按钮
+    // 设置图片点击事件
+    const setupImagePreview = () => {
+      if (!markdownBody.value) return;
+      
+      // 使用事件代理，将点击事件绑定到父元素上
+      markdownBody.value.addEventListener('click', (event) => {
+        const target = event.target;
+        // 检查点击的是否是图片
+        if (target.tagName === 'IMG') {
+          event.preventDefault();
+          previewImageSrc.value = target.src;
+          previewImageAlt.value = target.alt || '图片预览';
+          previewVisible.value = true;
+        }
+      });
+      
+      // 为所有图片添加样式和提示
+      const images = markdownBody.value.querySelectorAll('img');
+      images.forEach(img => {
+        // 添加鼠标悬停提示
+        img.title = '点击查看大图';
+        img.classList.add('zoomable-image');
+        
+        // 只有当图片不在图片容器内时才添加容器
+        if (!img.parentElement.classList.contains('image-container')) {
+          // 给图片外面包一层容器，方便添加鼠标悬停效果
+          const container = document.createElement('div');
+          container.className = 'image-container';
+          img.parentNode.insertBefore(container, img);
+          container.appendChild(img);
+        }
+      });
+    };
+    
+    // 关闭图片预览
+    const closePreview = () => {
+      previewVisible.value = false;
+      // 确保滚动状态恢复
+      document.body.style.overflow = '';
+      document.body.classList.remove('no-scroll');
+    };
+    
+    // 监听内容变化，重新设置功能
     watch(() => props.content, () => {
-      // 等待DOM更新后设置按钮
-      setTimeout(setupCodeCopyButtons, 0);
+      // 等待DOM更新后设置
+      setTimeout(() => {
+        setupCodeCopyButtons();
+        setupImagePreview();
+      }, 100); // 增加延迟以确保DOM完全更新
     });
     
-    // 组件挂载后设置复制按钮
+    // 组件挂载后设置功能
     onMounted(() => {
       setupCodeCopyButtons();
+      
+      // 延迟执行确保DOM渲染完成
+      setTimeout(() => {
+        setupImagePreview();
+      }, 100);
     });
     
     // 组件卸载前销毁clipboard实例
@@ -149,7 +217,11 @@ export default {
 
     return {
       renderedContent,
-      markdownBody
+      markdownBody,
+      previewVisible,
+      previewImageSrc,
+      previewImageAlt,
+      closePreview
     }
   }
 }
@@ -193,5 +265,29 @@ export default {
   background-color: #fff0f0;
   color: #ff3333;
   border: 1px solid #ffdddd;
+}
+
+/* 图片容器样式 */
+.image-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  overflow: hidden;
+  max-width: 100%;
+  vertical-align: middle;
+  margin: 1rem auto;
+  border-radius: 4px;
+}
+
+.zoomable-image {
+  display: block;
+}
+
+/* 让图片居中显示 */
+.markdown-body p img,
+.markdown-body p .image-container {
+  display: block;
+  margin: 1rem auto;
+  max-width: 100%;
 }
 </style> 

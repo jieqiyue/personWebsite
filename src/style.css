@@ -109,3 +109,20 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* 图片预览相关样式 */
+.markdown-body img {
+  cursor: pointer !important; /* 使用手型光标表示可点击 */
+}
+
+/* 防止图片预览时页面滚动 */
+body.no-scroll {
+  overflow: hidden !important;
+}
+
+/* 深色模式下的图片预览调整 */
+@media (prefers-color-scheme: dark) {
+  .image-container {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
