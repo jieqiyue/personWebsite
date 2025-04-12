@@ -6,7 +6,10 @@
       :visible="previewVisible" 
       :imageSrc="previewImageSrc" 
       :imageAlt="previewImageAlt" 
+      :images="allImages"
+      :currentIndex="currentImageIndex"
       @close="closePreview"
+      @navigate="handleImageNavigation"
     />
   </div>
 </template>
@@ -43,6 +46,8 @@ export default {
     const previewVisible = ref(false);
     const previewImageSrc = ref('');
     const previewImageAlt = ref('');
+    const allImages = ref([]);
+    const currentImageIndex = ref(-1);
     
     const renderedContent = computed(() => {
       if (props.loading) {
@@ -150,21 +155,66 @@ export default {
     const setupImagePreview = () => {
       if (!markdownBody.value) return;
       
-      // 使用事件代理，将点击事件绑定到父元素上
-      markdownBody.value.addEventListener('click', (event) => {
-        const target = event.target;
-        // 检查点击的是否是图片
-        if (target.tagName === 'IMG') {
-          event.preventDefault();
-          previewImageSrc.value = target.src;
-          previewImageAlt.value = target.alt || '图片预览';
-          previewVisible.value = true;
-        }
-      });
+      // 每次内容更新时，重新收集图片
+      allImages.value = [];
+      
+      // 使用事件代理，确保只绑定一次
+      if (!markdownBody.value.hasAttribute('data-preview-initialized')) {
+        markdownBody.value.setAttribute('data-preview-initialized', 'true');
+        
+        // 绑定点击事件
+        markdownBody.value.addEventListener('click', (event) => {
+          const target = event.target;
+          // 检查点击的是否是图片
+          if (target.tagName === 'IMG') {
+            event.preventDefault();
+            
+            // 查找当前图片在图片数组中的索引
+            currentImageIndex.value = allImages.value.findIndex(img => img === target);
+            
+            if (currentImageIndex.value === -1) {
+              // 如果没找到，可能是新添加的图片，直接使用当前图片
+              previewImageSrc.value = target.src;
+              previewImageAlt.value = target.alt || '图片预览';
+            } else {
+              // 更新预览图片
+              updatePreviewImage();
+            }
+            
+            previewVisible.value = true;
+          }
+        });
+      }
       
       // 为所有图片添加样式和提示
       const images = markdownBody.value.querySelectorAll('img');
       images.forEach(img => {
+        // 添加到全局图片数组，用于导航
+        if (!allImages.value.includes(img)) {
+          allImages.value.push(img);
+        }
+        
+        // 如果图片已初始化，跳过
+        if (img.hasAttribute('data-preview-ready')) return;
+        
+        // 标记为已初始化
+        img.setAttribute('data-preview-ready', 'true');
+        
+        // 添加加载状态指示
+        img.classList.add('loading-image');
+        img.addEventListener('load', () => {
+          img.classList.remove('loading-image');
+          img.classList.add('loaded-image');
+        });
+        
+        img.addEventListener('error', () => {
+          img.classList.remove('loading-image');
+          img.classList.add('error-image');
+          img.alt = '图片加载失败: ' + (img.alt || '');
+          img.style.padding = '20px';
+          img.style.backgroundColor = '#fff0f0';
+        });
+        
         // 添加鼠标悬停提示
         img.title = '点击查看大图';
         img.classList.add('zoomable-image');
@@ -186,6 +236,28 @@ export default {
       // 确保滚动状态恢复
       document.body.style.overflow = '';
       document.body.classList.remove('no-scroll');
+    };
+    
+    // 处理图片导航
+    const handleImageNavigation = (direction) => {
+      if (allImages.value.length <= 1) return;
+      
+      if (direction === 'prev' && currentImageIndex.value > 0) {
+        currentImageIndex.value--;
+        updatePreviewImage();
+      } else if (direction === 'next' && currentImageIndex.value < allImages.value.length - 1) {
+        currentImageIndex.value++;
+        updatePreviewImage();
+      }
+    };
+    
+    // 更新预览图片
+    const updatePreviewImage = () => {
+      if (currentImageIndex.value >= 0 && currentImageIndex.value < allImages.value.length) {
+        const img = allImages.value[currentImageIndex.value];
+        previewImageSrc.value = img.src;
+        previewImageAlt.value = img.alt || '图片预览';
+      }
     };
     
     // 监听内容变化，重新设置功能
@@ -221,13 +293,63 @@ export default {
       previewVisible,
       previewImageSrc,
       previewImageAlt,
-      closePreview
+      closePreview,
+      handleImageNavigation,
+      updatePreviewImage,
+      allImages,
+      currentImageIndex
     }
   }
 }
 </script>
 
 <style>
+/* 图片加载状态 */
+.loading-image {
+  min-height: 100px;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+.loading-image::before {
+  content: "加载中...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.loading-image::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.error-image {
+  position: relative;
+}
+
+.error-image::before {
+  content: "⚠️ 图片加载失败";
+  text-align: center;
+  color: #dc3545;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 .markdown-body {
   box-sizing: border-box;
   min-width: 200px;

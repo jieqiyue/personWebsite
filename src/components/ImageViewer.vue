@@ -5,6 +5,10 @@
       class="image-viewer" 
       @click.self="closeViewer"
       @touchstart.self="closeViewer"
+      @keydown.left="navigatePrev"
+      @keydown.right="navigateNext"
+      tabindex="0"
+      ref="viewerContainer"
     >
       <div class="image-wrapper">
         <transition name="zoom">
@@ -23,12 +27,36 @@
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
+      
+      <!-- 导航按钮 -->
+      <div class="navigation-controls">
+        <button 
+          v-if="hasPrevious" 
+          class="nav-button prev-button" 
+          @click.stop="navigatePrev" 
+          aria-label="上一张图片"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button 
+          v-if="hasNext" 
+          class="nav-button next-button" 
+          @click.stop="navigateNext" 
+          aria-label="下一张图片"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
     </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 
 const props = defineProps({
   visible: {
@@ -42,10 +70,32 @@ const props = defineProps({
   imageAlt: {
     type: String,
     default: '图片预览'
+  },
+  // 新增属性
+  images: {
+    type: Array,
+    default: () => []
+  },
+  currentIndex: {
+    type: Number,
+    default: -1
   }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'navigate']);
+const viewerContainer = ref(null);
+const hasPrevious = ref(false);
+const hasNext = ref(false);
+
+// 导航到上一张图片
+const navigatePrev = () => {
+  emit('navigate', 'prev');
+};
+
+// 导航到下一张图片
+const navigateNext = () => {
+  emit('navigate', 'next');
+};
 
 const closeViewer = () => {
   emit('close');
@@ -58,6 +108,10 @@ const closeViewer = () => {
 const handleKeyDown = (e) => {
   if (e.key === 'Escape' && props.visible) {
     closeViewer();
+  } else if (e.key === 'ArrowLeft' && props.visible) {
+    navigatePrev();
+  } else if (e.key === 'ArrowRight' && props.visible) {
+    navigateNext();
   }
 };
 
@@ -75,6 +129,16 @@ const preventScroll = () => {
 // 确保在组件更新、关闭和卸载时都能正确恢复滚动
 watch(() => props.visible, (newVal) => {
   preventScroll();
+  
+  // 当预览变为可见时，聚焦容器以启用键盘导航
+  if (newVal) {
+    nextTick(() => {
+      if (viewerContainer.value) {
+        viewerContainer.value.focus();
+      }
+    });
+  }
+  
   // 额外检查：如果关闭了预览但滚动仍被禁用，强制恢复
   if (!newVal) {
     setTimeout(() => {
@@ -84,8 +148,46 @@ watch(() => props.visible, (newVal) => {
   }
 }, { immediate: true });
 
+// 设置是否有上一张/下一张图片的状态
+watch(() => props.currentIndex, (newIndex) => {
+  if (props.images && props.images.length > 0) {
+    hasPrevious.value = newIndex > 0;
+    hasNext.value = newIndex < props.images.length - 1;
+  } else {
+    hasPrevious.value = false;
+    hasNext.value = false;
+  }
+}, { immediate: true });
+
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown);
+  
+  // 添加触摸滑动支持
+  if (viewerContainer.value) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    viewerContainer.value.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    viewerContainer.value.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    });
+    
+    const handleSwipe = () => {
+      const swipeThreshold = 100; // 最小滑动距离
+      
+      if (touchEndX - touchStartX > swipeThreshold) {
+        // 向右滑动，显示上一张
+        navigatePrev();
+      } else if (touchStartX - touchEndX > swipeThreshold) {
+        // 向左滑动，显示下一张
+        navigateNext();
+      }
+    };
+  }
 });
 
 onUnmounted(() => {
@@ -108,7 +210,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: zoom-out;
+  cursor: pointer;
+  outline: none; /* 移除聚焦时的轮廓 */
 }
 
 .image-wrapper {
@@ -151,6 +254,46 @@ onUnmounted(() => {
   transform: scale(1.1);
 }
 
+/* 导航按钮 */
+.navigation-controls {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+  pointer-events: none; /* 防止影响背景点击 */
+}
+
+.nav-button {
+  width: 50px;
+  height: 50px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto; /* 允许按钮点击 */
+  opacity: 0.7;
+}
+
+.nav-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.prev-button {
+  margin-right: auto;
+}
+
+.next-button {
+  margin-left: auto;
+}
+
 /* 淡入淡出动画 */
 .fade-enter-active,
 .fade-leave-active {
@@ -184,6 +327,15 @@ onUnmounted(() => {
     right: 10px;
     width: 36px;
     height: 36px;
+  }
+  
+  .navigation-controls {
+    padding: 0 20px;
+  }
+  
+  .nav-button {
+    width: 40px;
+    height: 40px;
   }
   
   .preview-image {
