@@ -1,0 +1,20 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  debug: true
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  prefix: "chat:"
+
+websocket:
+  path: "/ws"
+  message_size_limit: 1024
+  message_buffer_size: 256
+  
+auth:
+  jwt_secret: "change_this_to_your_secret_key"
+  token_expiry: 24h  # 24小时 
