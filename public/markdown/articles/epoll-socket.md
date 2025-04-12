@@ -73,13 +73,13 @@ int anetTcpAccept(char *err, int s, char *ip, size_t ip_len, int *port) {
 
 1. 那这里将listenfd设置为阻塞和非阻塞表现出来的行为有什么不同呢？
 首先使用Redis1.3.6的源码进行调试，可以看到Redis1.3.6中在anetTcpServer中创建了服务端的listenfd之后，就直接去做事件循环了。并没有将listenfd设置为非阻塞。这个时候调用accept，将会一直阻塞在这里，直到有客户端连接过来。
-![在这里插入图片描述](\images\art\8ed3bf74a0868c05f8bd97179e08de7f.png)然后我如果用一个客户端去连接的话，就会从accept中返回了。
-![在这里插入图片描述](\images\art\f086e3807e32ae8c9d17868cde67e247.png)
+![在这里插入图片描述](/images/art/8ed3bf74a0868c05f8bd97179e08de7f.png)然后我如果用一个客户端去连接的话，就会从accept中返回了。
+![在这里插入图片描述](/images/art/f086e3807e32ae8c9d17868cde67e247.png)
 而当我在anetTcpServer中创建了服务端的listenfd之后，手动添加一段代码，将这个listenfd设置为非阻塞呢？
-![在这里插入图片描述](\images\art\07148e1a7a414de327f13ba8d2e195dc.png)
+![在这里插入图片描述](/images/art/07148e1a7a414de327f13ba8d2e195dc.png)
 此时已经是非阻塞了。
 此时再去执行accept，会直接返回。并且error number会设置为11.
-![在这里插入图片描述](\images\art\c51a5a9d766af3624a2742eaad8c8450.png)
+![在这里插入图片描述](/images/art/c51a5a9d766af3624a2742eaad8c8450.png)
 这样就能知道将listenfd设置为非阻塞的行为是什么了。
 
 
