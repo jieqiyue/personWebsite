@@ -1,5 +1,5 @@
 <div align="center">
-   <h1>Hi there, I'm Qiyue <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="25px" style="display: inline; vertical-align: middle; margin: 0;"> </h1>
+   <h1>Hi there, I'm Qiyue 👋</h1>
 </div>
 
 <p align='center'>
