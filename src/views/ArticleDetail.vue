@@ -38,7 +38,7 @@
         <ul v-if="relatedArticles.length > 0">
           <li v-for="relatedArticle in relatedArticles" :key="relatedArticle.id">
             <router-link :to="'/articles/' + relatedArticle.id">
-              {{ relatedArticle.title }}
+              <span>{{ relatedArticle.title }}</span>
               <span class="related-tag">{{ getCommonTag(relatedArticle) }}</span>
             </router-link>
           </li>
@@ -420,10 +420,19 @@ watch(() => route.params.id, (newId) => {
   justify-content: space-between;
   align-items: center;
   transition: color 0.2s;
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 .related-articles a:hover {
   color: #42b883;
+}
+
+.related-articles a > span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+  flex: 1; /* 让文本占用剩余空间 */
 }
 
 .related-tag {
@@ -432,6 +441,8 @@ watch(() => route.params.id, (newId) => {
   background-color: rgba(66, 184, 131, 0.1);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  flex-shrink: 0; /* 防止标签被压缩 */
+  white-space: nowrap; /* 防止标签换行 */
 }
 
 .no-related {
