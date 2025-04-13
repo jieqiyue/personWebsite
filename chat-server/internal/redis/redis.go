@@ -60,11 +60,20 @@ func SaveMessage(ctx context.Context, roomID string, message []byte) error {
 		return fmt.Errorf("failed to save message: %w", err)
 	}
 	
-	// 设置列表过期时间 (7天)
-	err = Client.Expire(ctx, key, 7*24*time.Hour).Err()
-	if err != nil {
-		return fmt.Errorf("failed to set expiry: %w", err)
+	// 使用LTRIM限制消息列表长度，只保留最新的消息
+	// 从配置中获取最大消息数量
+	maxMessages := config.AppConfig.Redis.MaxMessages
+	if maxMessages <= 0 {
+		maxMessages = 1000 // 默认值，以防配置文件中没有设置
 	}
+	
+	// 使用负数作为起始索引，表示从列表末尾向前数
+	err = Client.LTrim(ctx, key, -maxMessages, -1).Err()
+	if err != nil {
+		return fmt.Errorf("failed to trim message list: %w", err)
+	}
+	
+	// 移除过期时间设置，让消息永久保存（只受数量限制）
 	
 	return nil
 }

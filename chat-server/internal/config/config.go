@@ -26,11 +26,12 @@ type ServerConfig struct {
 
 // RedisConfig 包含Redis服务器配置
 type RedisConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
-	Prefix   string `yaml:"prefix"`
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	Password    string `yaml:"password"`
+	DB          int    `yaml:"db"`
+	Prefix      string `yaml:"prefix"`
+	MaxMessages int64  `yaml:"max_messages"`
 }
 
 // WebSocketConfig 包含WebSocket配置

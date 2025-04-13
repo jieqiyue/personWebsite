@@ -6,37 +6,37 @@ import (
 	"log"
 	"sync"
 	"time"
-	
+
 	"github.com/gorilla/websocket"
-	
+
 	"chat-server/internal/models"
 	"chat-server/internal/redis"
 )
 
 // Client 表示一个WebSocket客户端连接
 type Client struct {
-	Hub      *Hub                // 所属的Hub
-	Conn     *websocket.Conn     // WebSocket连接
-	Send     chan []byte         // 发送消息的通道
-	User     *models.User        // 关联的用户信息
-	RoomID   string              // 当前所在的房间ID
-	mu       sync.Mutex          // 保护并发写入
-	ctx      context.Context     // 上下文
-	cancel   context.CancelFunc  // 取消函数
+	Hub    *Hub               // 所属的Hub
+	Conn   *websocket.Conn    // WebSocket连接
+	Send   chan []byte        // 发送消息的通道
+	User   *models.User       // 关联的用户信息
+	RoomID string             // 当前所在的房间ID
+	mu     sync.Mutex         // 保护并发写入
+	ctx    context.Context    // 上下文
+	cancel context.CancelFunc // 取消函数
 }
 
 // NewClient 创建一个新的客户端
 func NewClient(hub *Hub, conn *websocket.Conn, user *models.User, roomID string) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	return &Client{
-		Hub:     hub,
-		Conn:    conn,
-		Send:    make(chan []byte, 256), // 缓冲区大小
-		User:    user,
-		RoomID:  roomID,
-		ctx:     ctx,
-		cancel:  cancel,
+		Hub:    hub,
+		Conn:   conn,
+		Send:   make(chan []byte, 256), // 缓冲区大小
+		User:   user,
+		RoomID: roomID,
+		ctx:    ctx,
+		cancel: cancel,
 	}
 }
 
@@ -58,8 +58,8 @@ func (c *Client) ReadPump() {
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, 
-				websocket.CloseGoingAway, 
+			if websocket.IsUnexpectedCloseError(err,
+				websocket.CloseGoingAway,
 				websocket.CloseAbnormalClosure) {
 				log.Printf("websocket read error: %v", err)
 			}
@@ -76,26 +76,26 @@ func (c *Client) ReadPump() {
 		// 设置发送者ID和房间ID
 		msg.SenderID = c.User.ID
 		msg.RoomID = c.RoomID
-		
+
 		// 处理特殊命令消息
 		if msg.Type == models.CommandMessage {
 			c.handleCommand(&msg)
 			continue
 		}
-		
+
 		// 正常消息，广播给所有人
 		msgJSON, err := json.Marshal(msg)
 		if err != nil {
 			log.Printf("failed to marshal message: %v", err)
 			continue
 		}
-		
+
 		// 保存消息到Redis
 		err = redis.SaveMessage(c.ctx, c.RoomID, msgJSON)
 		if err != nil {
 			log.Printf("failed to save message: %v", err)
 		}
-		
+
 		// 发送给Hub广播
 		c.Hub.Broadcast <- &BroadcastMessage{
 			RoomID:  c.RoomID,
@@ -154,19 +154,19 @@ func (c *Client) WritePump() {
 func (c *Client) ChangeRoom(newRoomID string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.RoomID == newRoomID {
 		return
 	}
-	
+
 	// 从旧房间移除
 	oldRoomID := c.RoomID
 	c.Hub.RemoveFromRoom(c, oldRoomID)
-	
+
 	// 加入新房间
 	c.RoomID = newRoomID
 	c.Hub.AddToRoom(c, newRoomID)
-	
+
 	// 发送离开消息到旧房间
 	leaveMsg := models.NewUserLeaveMessage(oldRoomID, c.User.ID, c.User.Username)
 	leaveMsgJSON, _ := json.Marshal(leaveMsg)
@@ -174,7 +174,7 @@ func (c *Client) ChangeRoom(newRoomID string) {
 		RoomID:  oldRoomID,
 		Message: leaveMsgJSON,
 	}
-	
+
 	// 发送加入消息到新房间
 	joinMsg := models.NewUserJoinMessage(newRoomID, c.User.ID, c.User.Username)
 	joinMsgJSON, _ := json.Marshal(joinMsg)
@@ -202,17 +202,17 @@ func (c *Client) handleCommand(msg *models.Message) {
 // sendRoomUsers 发送房间用户列表
 func (c *Client) sendRoomUsers() {
 	users := c.Hub.GetRoomUsers(c.RoomID)
-	
+
 	// 创建用户列表消息
 	msg := models.NewSystemMessage(c.RoomID, "当前房间用户列表")
 	msg.Metadata = users
-	
+
 	msgJSON, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("failed to marshal users list: %v", err)
 		return
 	}
-	
+
 	// 只发送给请求方
 	c.Send <- msgJSON
-} 
+}
