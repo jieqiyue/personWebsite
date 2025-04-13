@@ -140,7 +140,13 @@ const connect = async () => {
           currentUserId.value = message.metadata.userId;
         }
         
-        addMessage(message);
+        // 检查是否是自己发送的消息，如果是则跳过（已经在本地添加过了）
+        const isSelfMessage = message.senderId === currentUserId.value && 
+                            message.type === 'text';
+        
+        if (!isSelfMessage) {
+          addMessage(message);
+        }
       } catch (e) {
         console.error('解析消息失败:', e);
         addMessage({

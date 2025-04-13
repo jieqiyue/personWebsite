@@ -4,33 +4,33 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
-	
+
 	"chat-server/internal/models"
 )
 
 // BroadcastMessage 表示一条广播消息
 type BroadcastMessage struct {
-	RoomID  string  // 目标房间ID
-	Message []byte  // 消息内容
+	RoomID  string // 目标房间ID
+	Message []byte // 消息内容
 }
 
 // Hub 管理所有WebSocket客户端
 type Hub struct {
 	// 所有活跃的客户端
 	clients map[*Client]bool
-	
+
 	// 房间映射，每个房间包含多个客户端
 	rooms map[string]map[*Client]bool
-	
+
 	// 广播消息通道
 	Broadcast chan *BroadcastMessage
-	
+
 	// 注册客户端通道
 	Register chan *Client
-	
+
 	// 取消注册客户端通道
 	Unregister chan *Client
-	
+
 	// 互斥锁保护map操作
 	mu sync.RWMutex
 }
@@ -52,10 +52,10 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.registerClient(client)
-		
+
 		case client := <-h.Unregister:
 			h.unregisterClient(client)
-		
+
 		case msg := <-h.Broadcast:
 			h.broadcastMessage(msg)
 		}
@@ -66,20 +66,20 @@ func (h *Hub) Run() {
 func (h *Hub) registerClient(client *Client) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	
+
 	// 添加到全局客户端列表
 	h.clients[client] = true
-	
+
 	// 添加到房间
 	h.AddToRoom(client, client.RoomID)
-	
+
 	// 广播用户加入消息
 	joinMsg := models.NewUserJoinMessage(client.RoomID, client.User.ID, client.User.Username)
 	msgJSON, _ := json.Marshal(joinMsg)
-	
+
 	// 不需要使用h.Broadcast通道，直接调用广播方法
 	h.broadcastToRoom(client.RoomID, msgJSON)
-	
+
 	log.Printf("Client registered: %s in room %s", client.User.Username, client.RoomID)
 }
 
@@ -87,24 +87,24 @@ func (h *Hub) registerClient(client *Client) {
 func (h *Hub) unregisterClient(client *Client) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	
+
 	if _, ok := h.clients[client]; ok {
 		// 从全局客户端列表移除
 		delete(h.clients, client)
-		
+
 		// 关闭发送通道
 		close(client.Send)
-		
+
 		// 从房间移除
 		h.RemoveFromRoom(client, client.RoomID)
-		
+
 		// 广播用户离开消息
 		leaveMsg := models.NewUserLeaveMessage(client.RoomID, client.User.ID, client.User.Username)
 		msgJSON, _ := json.Marshal(leaveMsg)
-		
+
 		// 直接调用广播方法
 		h.broadcastToRoom(client.RoomID, msgJSON)
-		
+
 		log.Printf("Client unregistered: %s from room %s", client.User.Username, client.RoomID)
 	}
 }
@@ -113,14 +113,24 @@ func (h *Hub) unregisterClient(client *Client) {
 func (h *Hub) broadcastMessage(msg *BroadcastMessage) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	h.broadcastToRoom(msg.RoomID, msg.Message)
 }
 
 // broadcastToRoom 向房间内所有客户端发送消息
 func (h *Hub) broadcastToRoom(roomID string, message []byte) {
+	var msg = models.NewDefaultMessage()
+	if err := json.Unmarshal(message, &msg); err != nil {
+		log.Printf("failed to unmarshal message: %v", err)
+		return
+	}
+
 	if clients, ok := h.rooms[roomID]; ok {
 		for client := range clients {
+			if msg.SenderID == client.User.ID {
+				continue
+			}
+
 			select {
 			case client.Send <- message:
 				// 消息发送成功
@@ -140,7 +150,7 @@ func (h *Hub) AddToRoom(client *Client, roomID string) {
 	if _, ok := h.rooms[roomID]; !ok {
 		h.rooms[roomID] = make(map[*Client]bool)
 	}
-	
+
 	// 添加客户端到房间
 	h.rooms[roomID][client] = true
 }
@@ -149,7 +159,7 @@ func (h *Hub) AddToRoom(client *Client, roomID string) {
 func (h *Hub) RemoveFromRoom(client *Client, roomID string) {
 	if _, ok := h.rooms[roomID]; ok {
 		delete(h.rooms[roomID], client)
-		
+
 		// 如果房间空了，删除房间
 		if len(h.rooms[roomID]) == 0 {
 			delete(h.rooms, roomID)
@@ -161,15 +171,15 @@ func (h *Hub) RemoveFromRoom(client *Client, roomID string) {
 func (h *Hub) GetRoomUsers(roomID string) []*models.User {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	users := make([]*models.User, 0)
-	
+
 	if clients, ok := h.rooms[roomID]; ok {
 		for client := range clients {
 			users = append(users, client.User)
 		}
 	}
-	
+
 	return users
 }
 
@@ -177,11 +187,11 @@ func (h *Hub) GetRoomUsers(roomID string) []*models.User {
 func (h *Hub) GetRoomClientsCount(roomID string) int {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	if clients, ok := h.rooms[roomID]; ok {
 		return len(clients)
 	}
-	
+
 	return 0
 }
 
@@ -189,7 +199,7 @@ func (h *Hub) GetRoomClientsCount(roomID string) int {
 func (h *Hub) RoomExists(roomID string) bool {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	
+
 	_, exists := h.rooms[roomID]
 	return exists
-} 
+}
