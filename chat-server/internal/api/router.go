@@ -6,7 +6,6 @@ import (
 
 	"chat-server/internal/config"
 	"chat-server/internal/redis"
-	"chat-server/internal/utils"
 	"chat-server/internal/websocket"
 	"context"
 	"log"
@@ -44,7 +43,6 @@ func SetupRouter() *gin.Engine {
 		rooms := api.Group("/rooms")
 		{
 			rooms.GET("", GetRooms)
-			rooms.POST("", CreateRoom)
 			rooms.GET("/:id", GetRoom)
 			rooms.GET("/:id/messages", GetRoomMessages)
 		}
@@ -81,33 +79,6 @@ func GetRooms(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"rooms": rooms,
-	})
-}
-
-// CreateRoom 创建新聊天室
-func CreateRoom(c *gin.Context) {
-	var req struct {
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description"`
-		IsPrivate   bool   `json:"isPrivate"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{
-			"error": "无效的请求数据",
-		})
-		return
-	}
-
-	// 生成房间ID
-	roomID := utils.GenerateRandomString(8)
-
-	c.JSON(201, gin.H{
-		"id":          roomID,
-		"name":        req.Name,
-		"description": req.Description,
-		"isPrivate":   req.IsPrivate,
-		"createdAt":   "2023-01-01T00:00:00Z",
 	})
 }
 
