@@ -294,10 +294,10 @@ onUnmounted(() => {
 <style scoped>
 .chat-window {
   position: fixed;
-  left: 20px;
+  right: 20px;
   bottom: 20px;
-  width: 350px;
-  height: 480px;
+  width: 450px;
+  height: 600px;
   background-color: var(--background, #fff);
   border: 1px solid var(--border, #e0e0e0);
   border-radius: 8px;
@@ -329,7 +329,7 @@ onUnmounted(() => {
 
 .chat-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--primary, #333);
 }
@@ -420,21 +420,21 @@ onUnmounted(() => {
 }
 
 .message-sender {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--text-light, #888);
 }
 
 .message-content {
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .message-time {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-lighter, #aaa);
-  margin-top: 4px;
+  margin-top: 5px;
   text-align: right;
 }
 
@@ -463,10 +463,10 @@ onUnmounted(() => {
 
 .message-input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1px solid var(--border, #e0e0e0);
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.2s ease;
 }
@@ -476,7 +476,7 @@ onUnmounted(() => {
 }
 
 .send-button {
-  padding: 8px 12px;
+  padding: 10px 14px;
   background-color: var(--primary, #007BFF);
   color: white;
   border: none;
@@ -547,11 +547,11 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .chat-window {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    width: calc(100% - 20px);
-    height: 400px;
+    right: 5px;
+    bottom: 5px;
+    width: calc(100% - 10px);
+    height: 80vh;
+    max-height: 600px;
   }
 }
 </style> 

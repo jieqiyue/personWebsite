@@ -17,7 +17,7 @@ defineEmits(['toggle-chat']);
 <style scoped>
 .chat-button {
   position: fixed;
-  left: 20px;
+  right: 20px;
   bottom: 20px;
   padding: 10px 20px;
   background-color: var(--background-alt, #f8f8f8);
@@ -52,7 +52,7 @@ defineEmits(['toggle-chat']);
 
 @media (max-width: 768px) {
   .chat-button {
-    left: 10px;
+    right: 10px;
     bottom: 10px;
     padding: 8px 16px;
   }
