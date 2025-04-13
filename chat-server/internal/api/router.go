@@ -1,6 +1,8 @@
 package api
 
 import (
+	"chat-server/internal/models"
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
@@ -24,6 +26,7 @@ func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 
+	fmt.Println(123123)
 	// 配置CORS
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -113,7 +116,7 @@ func GetRoomMessages(c *gin.Context) {
 
 	// 从查询参数获取limit和offset
 	limitStr := c.DefaultQuery("limit", "20")
-	offsetStr := c.DefaultQuery("offset", "0")
+	offsetStr := c.DefaultQuery("offset", "1")
 
 	limit, err := strconv.ParseInt(limitStr, 10, 64)
 	if err != nil {
@@ -126,14 +129,21 @@ func GetRoomMessages(c *gin.Context) {
 	}
 
 	// 从Redis获取消息历史
+	// 首先检查列表长度
 	ctx := context.Background()
-	messages, err := redis.GetMessages(ctx, roomID, offset, offset+limit-1)
-	if err != nil {
-		log.Printf("Failed to get messages: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "获取消息失败",
-		})
-		return
+	msgLen := redis.GetDefaultMessageLen(ctx, roomID)
+	var messages []models.Message
+	if msgLen > 0 {
+		limit = -(limit + offset - 1)
+		offset = -offset
+		messages, err = redis.GetMessages(ctx, roomID, limit, offset)
+		if err != nil {
+			log.Printf("Failed to get messages: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "获取消息失败",
+			})
+			return
+		}
 	}
 
 	c.JSON(200, gin.H{
