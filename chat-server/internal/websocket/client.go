@@ -75,6 +75,7 @@ func (c *Client) ReadPump() {
 
 		// 设置发送者ID和房间ID
 		msg.SenderID = c.User.ID
+		msg.SenderName = c.User.Username
 		msg.RoomID = c.RoomID
 
 		// 处理特殊命令消息

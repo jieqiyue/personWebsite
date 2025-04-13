@@ -18,13 +18,14 @@ const (
 
 // Message 表示一条聊天消息
 type Message struct {
-	ID        string      `json:"id"`                 // 消息唯一ID
-	RoomID    string      `json:"roomId"`             // 房间ID
-	SenderID  string      `json:"senderId"`           // 发送者ID
-	Content   string      `json:"content"`            // 消息内容
-	Type      MessageType `json:"type"`               // 消息类型
-	Timestamp time.Time   `json:"timestamp"`          // 消息时间戳
-	Metadata  interface{} `json:"metadata,omitempty"` // 可选的额外数据
+	ID         string      `json:"id"`                 // 消息唯一ID
+	RoomID     string      `json:"roomId"`             // 房间ID
+	SenderID   string      `json:"senderId"`           // 发送者ID
+	SenderName string      `json:"senderName"`         // 发送者姓名
+	Content    string      `json:"content"`            // 消息内容
+	Type       MessageType `json:"type"`               // 消息类型
+	Timestamp  time.Time   `json:"timestamp"`          // 消息时间戳
+	Metadata   interface{} `json:"metadata,omitempty"` // 可选的额外数据
 }
 
 // NewDefaultMessage 创建一条新的消息
