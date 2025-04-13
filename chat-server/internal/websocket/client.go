@@ -67,7 +67,7 @@ func (c *Client) ReadPump() {
 		}
 
 		// 处理接收到的消息
-		var msg models.Message
+		var msg = models.NewDefaultMessage()
 		if err := json.Unmarshal(message, &msg); err != nil {
 			log.Printf("failed to unmarshal message: %v", err)
 			continue
@@ -79,7 +79,7 @@ func (c *Client) ReadPump() {
 
 		// 处理特殊命令消息
 		if msg.Type == models.CommandMessage {
-			c.handleCommand(&msg)
+			c.handleCommand(msg)
 			continue
 		}
 
