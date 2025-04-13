@@ -1,6 +1,17 @@
 <script setup>
 import Header from './components/Header.vue'
 import BackToTop from './components/BackToTop.vue'
+import ChatButton from './components/ChatButton.vue'
+import ChatWindow from './components/ChatWindow.vue'
+import { ref } from 'vue'
+
+// 聊天窗口的显示状态
+const isChatOpen = ref(false)
+
+// 切换聊天窗口的显示状态
+const toggleChat = () => {
+  isChatOpen.value = !isChatOpen.value
+}
 </script>
 
 <template>
@@ -17,6 +28,10 @@ import BackToTop from './components/BackToTop.vue'
     <footer class="site-footer">
       <p>&copy; {{ new Date().getFullYear() }} 我的摄影博客. All rights reserved.</p>
     </footer>
+    
+    <!-- 聊天功能 -->
+    <ChatButton @toggle-chat="toggleChat" />
+    <ChatWindow :is-open="isChatOpen" @toggle-chat="toggleChat" />
   </div>
 </template>
 
