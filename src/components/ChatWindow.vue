@@ -49,7 +49,7 @@
       <select v-model="selectedRoom" class="room-selector">
         <option disabled value="">请选择聊天室</option>
         <option v-for="room in rooms" :key="room.id" :value="room.id">
-          {{ room.name }} ({{ room.userCount || 0 }}人在线)
+          {{ room.name }} ({{ roomUserCounts[room.id] || 0 }}人在线)
         </option>
       </select>
       
@@ -109,6 +109,9 @@ const currentUserId = ref('');
 const ws = ref(null);
 const messageContainer = ref(null);
 
+// 添加在线人数计数器
+const roomUserCounts = ref({}); // 房间ID -> 在线人数的映射
+
 // 聊天功能
 const connect = async () => {
   try {
@@ -130,6 +133,8 @@ const connect = async () => {
     
     ws.value.onopen = () => {
       connected.value = true;
+      
+      // 连接成功，自己已加入聊天室，但服务器会发送join消息，所以这里不需要增加计数
       addMessage({
         type: 'system',
         content: `已连接到聊天服务器，欢迎 ${username.value}`,
@@ -145,6 +150,24 @@ const connect = async () => {
         if (message.type === 'join' && message.metadata && 
             message.metadata.username === username.value) {
           currentUserId.value = message.metadata.userId;
+        }
+        
+        // 处理用户加入事件，更新在线人数
+        if (message.type === 'join') {
+          const roomId = message.roomId;
+          if (roomId && roomUserCounts.value[roomId] !== undefined) {
+            roomUserCounts.value[roomId]++;
+            console.log(`用户加入房间 ${roomId}，当前在线人数: ${roomUserCounts.value[roomId]}`);
+          }
+        }
+        
+        // 处理用户离开事件，更新在线人数
+        if (message.type === 'leave') {
+          const roomId = message.roomId;
+          if (roomId && roomUserCounts.value[roomId] !== undefined && roomUserCounts.value[roomId] > 0) {
+            roomUserCounts.value[roomId]--;
+            console.log(`用户离开房间 ${roomId}，当前在线人数: ${roomUserCounts.value[roomId]}`);
+          }
         }
         
         // 检查是否是自己发送的消息，如果是则跳过（已经在本地添加过了）
@@ -193,6 +216,11 @@ const connect = async () => {
 
 const disconnect = () => {
   if (ws.value) {
+    // 断开前先减少当前房间的计数（只有在收不到服务器的leave消息时才有用）
+    if (roomUserCounts.value[selectedRoom.value] !== undefined && roomUserCounts.value[selectedRoom.value] > 0) {
+      roomUserCounts.value[selectedRoom.value]--;
+    }
+    
     ws.value.close();
     ws.value = null;
   }
@@ -267,6 +295,12 @@ const loadRooms = async () => {
     
     if (data.rooms && data.rooms.length > 0) {
       rooms.value = data.rooms;
+      
+      // 初始化在线人数计数器
+      data.rooms.forEach(room => {
+        roomUserCounts.value[room.id] = room.userCount || 0;
+      });
+      
       // 默认选择第一个房间
       if (!selectedRoom.value) {
         selectedRoom.value = data.rooms.find(room => room.isDefault)?.id || data.rooms[0].id;
@@ -275,12 +309,14 @@ const loadRooms = async () => {
       // 如果没有房间，使用默认房间
       rooms.value = [{ id: 'general', name: '常规聊天', userCount: 0, isDefault: true }];
       selectedRoom.value = 'general';
+      roomUserCounts.value['general'] = 0; // 初始化默认房间计数器
     }
   } catch (error) {
     console.error('加载聊天室列表失败:', error);
     // 添加默认房间
     rooms.value = [{ id: 'general', name: '常规聊天', userCount: 0, isDefault: true }];
     selectedRoom.value = 'general';
+    roomUserCounts.value['general'] = 0; // 初始化默认房间计数器
   }
 };
 
