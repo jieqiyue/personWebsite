@@ -143,7 +143,9 @@
     
     <div class="connection-form">
       <input type="text" id="username" placeholder="你的昵称" value="">
-      <input type="text" id="roomId" placeholder="房间ID" value="general">
+      <select id="roomId" class="room-selector">
+        <option value="">正在加载房间列表...</option>
+      </select>
       <button id="connect-btn">连接</button>
       <button id="disconnect-btn" disabled>断开</button>
     </div>
@@ -186,6 +188,75 @@
     
     // 设置默认用户名
     usernameInput.value = `游客${Math.floor(Math.random() * 10000)}`;
+    
+    // 页面加载时获取房间列表
+    window.addEventListener('DOMContentLoaded', loadRooms);
+    
+    // 加载聊天室列表
+    function loadRooms() {
+      // 获取hostname，为空时使用localhost
+      const hostname = window.location.hostname || 'localhost';
+      const port = 8080; // 服务器端口
+      
+      // 添加加载中提示
+      addMessage({
+        type: 'system',
+        content: '正在加载聊天室列表...'
+      });
+      
+      // 发送请求获取房间列表
+      fetch(`http://${hostname}:${port}/api/rooms`)
+        .then(response => response.json())
+        .then(data => {
+          // 清空下拉列表
+          roomIdInput.innerHTML = '';
+          
+          // 遍历房间列表，添加选项
+          if (data.rooms && data.rooms.length > 0) {
+            data.rooms.forEach(room => {
+              const option = document.createElement('option');
+              option.value = room.id;
+              option.text = `${room.name} (${room.userCount}人在线)`;
+              option.selected = room.isDefault;
+              roomIdInput.appendChild(option);
+            });
+            
+            // 添加成功消息
+            addMessage({
+              type: 'system',
+              content: `成功加载${data.rooms.length}个聊天室`
+            });
+          } else {
+            // 如果没有房间，添加默认选项
+            const option = document.createElement('option');
+            option.value = 'general';
+            option.text = '常规聊天 (默认)';
+            roomIdInput.appendChild(option);
+            
+            // 添加错误消息
+            addMessage({
+              type: 'system',
+              content: '未找到可用聊天室，使用默认房间'
+            });
+          }
+        })
+        .catch(error => {
+          console.error('加载房间列表失败:', error);
+          
+          // 加载失败时，添加默认选项
+          roomIdInput.innerHTML = '';
+          const option = document.createElement('option');
+          option.value = 'general';
+          option.text = '常规聊天 (默认)';
+          roomIdInput.appendChild(option);
+          
+          // 添加错误消息
+          addMessage({
+            type: 'system',
+            content: '加载聊天室列表失败，使用默认房间'
+          });
+        });
+    }
     
     // 连接WebSocket
     connectBtn.addEventListener('click', connect);

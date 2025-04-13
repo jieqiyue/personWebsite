@@ -66,21 +66,21 @@ func Ping(c *gin.Context) {
 
 // GetRooms 获取所有聊天室
 func GetRooms(c *gin.Context) {
+	rooms := make([]gin.H, 0, len(config.AppConfig.ChatRooms))
+
+	// 从配置中获取聊天室信息
+	for _, room := range config.AppConfig.ChatRooms {
+		rooms = append(rooms, gin.H{
+			"id":          room.ID,
+			"name":        room.Name,
+			"description": room.Description,
+			"isDefault":   room.IsDefault,
+			"userCount":   websocket.GlobalHub.GetRoomClientsCount(room.ID),
+		})
+	}
+
 	c.JSON(200, gin.H{
-		"rooms": []gin.H{
-			{
-				"id":          "general",
-				"name":        "常规聊天",
-				"description": "通用聊天室，所有人可见",
-				"userCount":   websocket.GlobalHub.GetRoomClientsCount("general"),
-			},
-			{
-				"id":          "tech",
-				"name":        "技术交流",
-				"description": "讨论技术相关话题",
-				"userCount":   websocket.GlobalHub.GetRoomClientsCount("tech"),
-			},
-		},
+		"rooms": rooms,
 	})
 }
 

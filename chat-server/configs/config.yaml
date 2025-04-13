@@ -18,4 +18,15 @@ websocket:
   
 auth:
   jwt_secret: "change_this_to_your_secret_key"
-  token_expiry: 24h  # 24小时 
+  token_expiry: 24h  # 24小时
+
+# 聊天室配置
+chat_rooms:
+  - id: "general"
+    name: "常规聊天"
+    description: "通用聊天室，所有人可见"
+    is_default: true
+  - id: "tech"
+    name: "技术交流"
+    description: "讨论技术相关话题"
+    is_default: false 
