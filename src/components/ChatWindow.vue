@@ -46,7 +46,7 @@
     </div>
     
     <div class="chat-footer">
-      <select v-model="selectedRoom" class="room-selector" :disabled="!connected">
+      <select v-model="selectedRoom" class="room-selector">
         <option disabled value="">请选择聊天室</option>
         <option v-for="room in rooms" :key="room.id" :value="room.id">
           {{ room.name }} ({{ room.userCount || 0 }}人在线)
@@ -78,7 +78,7 @@
     <div class="connect-controls">
       <div v-if="!connected" class="connect-form">
         <input type="text" v-model="username" placeholder="您的昵称" class="username-input" />
-        <button @click="connect" class="connect-button">连接</button>
+        <button @click="connect" class="connect-button" :disabled="!selectedRoom">连接</button>
       </div>
       <button v-else @click="disconnect" class="disconnect-button">断开连接</button>
     </div>
@@ -112,11 +112,18 @@ const messageContainer = ref(null);
 // 聊天功能
 const connect = async () => {
   try {
-    // 先加载房间列表
-    await loadRooms();
+    // 确保已经选择了房间
+    if (!selectedRoom.value) {
+      addMessage({
+        type: 'system',
+        content: '请先选择一个聊天室',
+        timestamp: new Date()
+      });
+      return;
+    }
     
     // 创建WebSocket连接
-    const roomId = selectedRoom.value || (rooms.value.length > 0 ? rooms.value[0].id : 'general');
+    const roomId = selectedRoom.value;
     const wsUrl = `ws://${window.location.hostname}:8080/ws?username=${encodeURIComponent(username.value)}&roomId=${encodeURIComponent(roomId)}`;
     
     ws.value = new WebSocket(wsUrl);
@@ -286,9 +293,9 @@ watch(() => props.isOpen, (newVal) => {
 });
 
 // 组件挂载和卸载时的处理
-onMounted(() => {
+onMounted(async () => {
   // 加载房间列表
-  loadRooms();
+  await loadRooms();
 });
 
 onUnmounted(() => {
