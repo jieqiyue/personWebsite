@@ -183,4 +183,13 @@ func (h *Hub) GetRoomClientsCount(roomID string) int {
 	}
 	
 	return 0
+}
+
+// RoomExists 检查指定ID的房间是否存在
+func (h *Hub) RoomExists(roomID string) bool {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	
+	_, exists := h.rooms[roomID]
+	return exists
 } 

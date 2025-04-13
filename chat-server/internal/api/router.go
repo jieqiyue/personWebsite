@@ -95,13 +95,30 @@ func GetRoom(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"id":          roomID,
-		"name":        "聊天室 " + roomID,
-		"description": "聊天室描述",
-		"userCount":   websocket.GlobalHub.GetRoomClientsCount(roomID),
-		"users":       websocket.GlobalHub.GetRoomUsers(roomID),
-	})
+	// 检查是否是预配置的普通聊天室
+	var foundRoom *config.ChatRoomConfig
+	for _, room := range config.AppConfig.ChatRooms {
+		if room.ID == roomID {
+			foundRoom = &room
+			break
+		}
+	}
+
+	// 如果找到了预配置的普通聊天室，返回其信息
+	// 否则返回错误
+	if foundRoom != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"id":          foundRoom.ID,
+			"name":        foundRoom.Name,
+			"description": foundRoom.Description,
+			"isDefault":   foundRoom.IsDefault,
+		})
+	} else {
+		// 如果不是预配置的普通聊天室，返回错误
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "房间不存在或无权访问",
+		})
+	}
 }
 
 // GetRoomMessages 获取聊天室消息历史
