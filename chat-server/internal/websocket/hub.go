@@ -19,9 +19,12 @@ type Hub struct {
 	// 所有活跃的客户端
 	clients map[*Client]bool
 
-	// 房间映射，每个房间包含多个客户端
+	// 普通房间映射，每个房间包含多个客户端
 	rooms map[string]map[*Client]bool
 
+	// 单聊房间映射，每个房间包含两个客户端
+	singleRooms map[string]map[*Client]bool
+	
 	// 广播消息通道
 	Broadcast chan *BroadcastMessage
 
@@ -78,7 +81,7 @@ func (h *Hub) registerClient(client *Client) {
 	msgJSON, _ := json.Marshal(joinMsg)
 
 	// 不需要使用h.Broadcast通道，直接调用广播方法
-	h.broadcastToRoom(client.RoomID, msgJSON)
+	h.BroadcastToAll(msgJSON)
 
 	log.Printf("Client registered: %s in room %s", client.User.Username, client.RoomID)
 }
@@ -103,7 +106,7 @@ func (h *Hub) unregisterClient(client *Client) {
 		msgJSON, _ := json.Marshal(leaveMsg)
 
 		// 直接调用广播方法
-		h.broadcastToRoom(client.RoomID, msgJSON)
+		h.BroadcastToAll(msgJSON)
 
 		log.Printf("Client unregistered: %s from room %s", client.User.Username, client.RoomID)
 	}
@@ -140,6 +143,15 @@ func (h *Hub) broadcastToRoom(roomID string, message []byte) {
 				delete(h.clients, client)
 				h.RemoveFromRoom(client, roomID)
 			}
+		}
+	}
+}
+
+// BroadcastToAll 广播消息到所有房间
+func (h *Hub) BroadcastToAll(message []byte) {
+	for _, clients := range h.rooms {
+		for client := range clients {
+			client.Send <- message
 		}
 	}
 }
