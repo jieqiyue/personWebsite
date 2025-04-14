@@ -136,6 +136,20 @@ echo "=== 后端服务启动日志 ==="
 cat out.log
 echo "=== 后端服务启动日志输出结束 ==="
 
+
+# 写入当前版本信息
+echo "📝 记录当前 Git 版本信息..."
+
+# 拿到 commit id 和 message
+commit_id=$(git rev-parse --short HEAD)
+commit_msg=$(git log -1 --pretty=%B)
+
+# 写入到 version 文件
+echo "Commit ID: $commit_id" > version.txt
+echo "Message: $commit_msg" >> version.txt
+
+echo "✅ 写入 version.txt 完成"
+
 echo "✅ 后端服务启动成功"
 echo "✅ 部署完成！"
 

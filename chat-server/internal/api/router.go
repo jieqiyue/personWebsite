@@ -2,9 +2,9 @@ package api
 
 import (
 	"chat-server/internal/models"
-	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"os"
 
 	"chat-server/internal/config"
 	"chat-server/internal/redis"
@@ -34,6 +34,18 @@ func SetupRouter() *gin.Engine {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+
+	router.GET("/version", func(c *gin.Context) {
+		data, err := os.ReadFile("/tmp/personWebsite/chat-server/cmd/server/version.txt")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   "无法读取版本信息",
+				"details": err.Error(),
+			})
+			return
+		}
+		c.String(200, string(data))
+	})
 
 	// 注册API路由
 	api := router.Group("/api")
