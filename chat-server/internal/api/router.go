@@ -36,7 +36,7 @@ func SetupRouter() *gin.Engine {
 	}))
 
 	router.GET("/version", func(c *gin.Context) {
-		data, err := os.ReadFile("")
+		data, err := os.ReadFile("/tmp/personWebsite/chat-server/cmd/server/version.txt")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": "无法读取版本信息",

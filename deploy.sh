@@ -142,6 +142,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+sleep 10 
 # 15. 输出后端服务启动日志
 echo "=== 后端服务启动日志 ==="
 cat out.log
