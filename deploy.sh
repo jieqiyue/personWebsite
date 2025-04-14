@@ -3,7 +3,7 @@
 # 个人网站一键部署脚本
 
 # 设置项目信息
-GITHUB_REPO="git@github.com:jieqiyue/personWebsite.git"
+GITHUB_REPO="git@gitee.com:qiyuejie/personWebsite.git"
 PROJECT_DIR="/tmp/personWebsite"
 NGINX_DIR="/usr/share/nginx/html"
 
@@ -38,9 +38,14 @@ echo "从GitHub拉取代码结束"
 cd "$PROJECT_DIR"
 
 # 4. 输出当前目录下面的文件
+echo "=== 当前目录 ==="
+pwd
+echo "=== 当前目录输出结束 ==="
+
 echo "=== 当前目录下面的文件 ==="
 ls -la
 echo "=== 当前目录下面的文件输出结束 ==="
+
 
 # 5. 编译 + 打包 + 生成最终镜像
 echo "=== 前端编译 + 打包 + 生成最终镜像 ==="
