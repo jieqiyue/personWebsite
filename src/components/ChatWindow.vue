@@ -142,48 +142,85 @@ const connect = async () => {
       });
     };
     
-    ws.value.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        
-        // 保存服务器分配的用户ID
-        if (message.type === 'join' && message.metadata && 
-            message.metadata.username === username.value) {
-          currentUserId.value = message.metadata.userId;
-        }
-        
-        // 处理用户加入事件，更新在线人数
-        if (message.type === 'join') {
-          const roomId = message.roomId;
-          if (roomId && roomUserCounts.value[roomId] !== undefined) {
-            roomUserCounts.value[roomId]++;
-            console.log(`用户加入房间 ${roomId}，当前在线人数: ${roomUserCounts.value[roomId]}`);
+    ws.value.onmessage = async (event) => {
+      const msg = JSON.parse(event.data);
+      
+      // 调试输出所有接收到的消息
+      console.log('收到消息:', msg);
+      
+      // 保存服务器分配的用户ID（无论消息类型）
+      if (msg.metadata && msg.metadata.username === username.value) {
+        currentUserId.value = msg.metadata.userId;
+      }
+      
+      switch (msg.type) {
+        case 'message':
+        case 'text':
+          // 处理普通消息
+          // 检查是否是自己发送的消息，如果是则跳过（已经在本地添加过了）
+          const isSelfMessage = msg.senderId === currentUserId.value;
+          
+          if (!isSelfMessage) {
+            addMessage(msg);
           }
-        }
+          break;
         
-        // 处理用户离开事件，更新在线人数
-        if (message.type === 'leave') {
-          const roomId = message.roomId;
-          if (roomId && roomUserCounts.value[roomId] !== undefined && roomUserCounts.value[roomId] > 0) {
-            roomUserCounts.value[roomId]--;
-            console.log(`用户离开房间 ${roomId}，当前在线人数: ${roomUserCounts.value[roomId]}`);
+        case 'join':
+          // 完整打印收到的加入消息对象，用于调试
+          console.log('收到加入消息(完整对象):', JSON.stringify(msg));
+          
+          // 用户加入消息 - 更新所有房间人数
+          if (msg.roomId && roomUserCounts.value[msg.roomId] !== undefined) {
+            roomUserCounts.value[msg.roomId]++;
           }
-        }
+          
+          // 仅在当前选中的房间内显示加入消息
+          if (msg.roomId === selectedRoom.value) {
+            // 保持原始消息类型为'join'，并使用服务器发送的完整消息对象
+            addMessage({
+              ...msg,                                     // 保留所有原始字段
+              type: 'join',                               // 确保类型为join
+              content: msg.content || `用户加入了聊天室`,   // 提供默认内容
+              timestamp: new Date(msg.timestamp || Date.now())
+            });
+          }
+          break;
         
-        // 检查是否是自己发送的消息，如果是则跳过（已经在本地添加过了）
-        const isSelfMessage = message.senderId === currentUserId.value && 
-                            message.type === 'text';
-        
-        if (!isSelfMessage) {
-          addMessage(message);
-        }
-      } catch (e) {
-        console.error('解析消息失败:', e);
-        addMessage({
-          type: 'system',
-          content: `收到无效消息: ${event.data}`,
-          timestamp: new Date()
-        });
+        case 'leave':
+          // 完整打印收到的离开消息对象，用于调试
+          console.log('收到离开消息(完整对象):', JSON.stringify(msg));
+          
+          // 用户离开消息 - 更新所有房间人数
+          if (msg.roomId && roomUserCounts.value[msg.roomId] !== undefined && roomUserCounts.value[msg.roomId] > 0) {
+            roomUserCounts.value[msg.roomId]--;
+          }
+          
+          // 仅在当前选中的房间内显示离开消息
+          if (msg.roomId === selectedRoom.value) {
+            // 保持原始消息类型为'leave'，并使用服务器发送的完整消息对象
+            addMessage({
+              ...msg,                                     // 保留所有原始字段
+              type: 'leave',                              // 确保类型为leave
+              content: msg.content || `用户离开了聊天室`,   // 提供默认内容
+              timestamp: new Date(msg.timestamp || Date.now())
+            });
+          }
+          break;
+          
+        default:
+          // 处理其他未知类型的消息
+          console.log('收到未知类型消息:', msg);
+          // 尝试显示未知类型消息的内容
+          if (msg.content && msg.roomId === selectedRoom.value) {
+            addMessage({
+              type: msg.type || 'unknown',
+              content: msg.content,
+              senderId: msg.senderId,
+              senderName: msg.senderName || (msg.metadata && msg.metadata.username) || '未知用户',
+              timestamp: new Date(msg.timestamp || Date.now())
+            });
+          }
+          break;
       }
     };
     
@@ -288,7 +325,7 @@ const formatTime = (timestamp) => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
-const loadRooms = async () => {
+const loadRooms = async (force = false) => {
   try {
     const response = await fetch(`http://${window.location.hostname}:8080/api/rooms`);
     const data = await response.json();
@@ -318,6 +355,20 @@ const loadRooms = async () => {
     selectedRoom.value = 'general';
     roomUserCounts.value['general'] = 0; // 初始化默认房间计数器
   }
+};
+
+// 由于现在可以从服务器得到所有房间的实时更新，可以移除或减少刷新间隔
+// 例如，将刷新间隔从30秒改为2分钟作为备份机制
+const startRefreshInterval = () => {
+  // 清除之前的定时器
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value);
+  }
+  
+  // 设置新的定时器，每2分钟刷新一次，作为备份机制
+  refreshInterval.value = setInterval(() => {
+    loadRooms(true); // 强制刷新所有房间信息
+  }, 120000); // 2分钟
 };
 
 // 监听聊天窗口的打开状态
