@@ -26,7 +26,6 @@ func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	fmt.Println(123123)
 	// 配置CORS
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
