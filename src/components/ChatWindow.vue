@@ -307,7 +307,7 @@ const scrollToBottom = async () => {
 
 const getSenderName = (message) => {
   if (message.senderId === currentUserId.value) {
-    return '我';
+    return username.value + "(我)";
   }
   
   return message.senderName || message.metadata?.username || '其他用户';
