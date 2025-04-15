@@ -18,8 +18,15 @@
         <span v-else>未连接</span>
       </div>
       
-      <div class="message-container" ref="messageContainer">
-        <div v-if="messages.length === 0" class="no-messages">
+      <div class="message-container" ref="messageContainer" @scroll="handleScroll">
+        <div v-if="isLoadingHistory" class="history-loading">
+          加载历史消息...
+        </div>
+        <div v-if="!isLoadingHistory && !hasMoreHistory && messages.length > 0" class="history-end">
+          已显示全部历史消息
+        </div>
+        
+        <div v-if="messages.length === 0 && !isLoadingHistory" class="no-messages">
           <p>欢迎来到聊天室，开始发送消息吧！</p>
         </div>
         
@@ -108,9 +115,12 @@ const username = ref(`游客${Math.floor(Math.random() * 10000)}`);
 const currentUserId = ref('');
 const ws = ref(null);
 const messageContainer = ref(null);
-
-// 添加在线人数计数器
-const roomUserCounts = ref({}); // 房间ID -> 在线人数的映射
+const roomUserCounts = ref({});
+const messageOffset = ref(1);
+const messageLimit = ref(20);
+const isLoadingHistory = ref(false);
+const hasMoreHistory = ref(true);
+const initialScrollDone = ref(false);
 
 // 聊天功能
 const connect = async () => {
@@ -134,7 +144,14 @@ const connect = async () => {
     ws.value.onopen = () => {
       connected.value = true;
       
-      // 连接成功，自己已加入聊天室，但服务器会发送join消息，所以这里不需要增加计数
+      // 连接成功，启动定时刷新
+      //startRefreshInterval();
+      
+      // 连接成功，加载历史消息
+      messageOffset.value = 1;
+      hasMoreHistory.value = true;
+      loadHistoryMessages();
+      
       addMessage({
         type: 'system',
         content: `已连接到聊天服务器，欢迎 ${username.value}`,
@@ -389,6 +406,70 @@ onUnmounted(() => {
   // 确保在组件卸载时关闭连接
   disconnect();
 });
+
+const handleScroll = () => {
+  if (messageContainer.value && messageContainer.value.scrollTop < 50 && !isLoadingHistory.value && hasMoreHistory.value) {
+    loadHistoryMessages();
+  }
+};
+
+const loadHistoryMessages = async () => {
+  if (!selectedRoom.value || isLoadingHistory.value) return;
+  
+  try {
+    isLoadingHistory.value = true;
+    
+    const offset = messageOffset.value;
+    const limit = messageLimit.value;
+    
+    const response = await fetch(`http://${window.location.hostname}:8080/api/rooms/${selectedRoom.value}/messages?offset=${offset}&limit=${limit}`);
+    const data = await response.json();
+
+    console.log(data);
+    if (data.messages && data.messages.length > 0) {
+      const oldHeight = messageContainer.value?.scrollHeight || 0;
+      
+      messages.value = [...data.messages, ...messages.value];
+      
+      messageOffset.value += data.messages.length;
+      
+      if (data.messages.length < limit) {
+        hasMoreHistory.value = false;
+      }
+      
+      nextTick(() => {
+        if (messageContainer.value) {
+          const newHeight = messageContainer.value.scrollHeight;
+          messageContainer.value.scrollTop = newHeight - oldHeight;
+        }
+      });
+    } else {
+      hasMoreHistory.value = false;
+    }
+  } catch (error) {
+    console.error('加载历史消息失败:', error);
+    addMessage({
+      type: 'system',
+      content: `加载历史消息失败: ${error.message}`,
+      timestamp: new Date()
+    });
+  } finally {
+    isLoadingHistory.value = false;
+  }
+};
+
+watch(selectedRoom, (newRoom) => {
+  if (newRoom) {
+    messages.value = [];
+    messageOffset.value = 1;
+    hasMoreHistory.value = true;
+    initialScrollDone.value = false;
+    
+    if (connected.value) {
+      loadHistoryMessages();
+    }
+  }
+});
 </script>
 
 <style scoped>
@@ -477,6 +558,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.history-loading, .history-end {
+  text-align: center;
+  color: var(--text-light, #888);
+  padding: 10px;
+  font-size: 12px;
+}
+
+.history-end {
+  background-color: var(--background-alt, #f5f5f5);
+  border-radius: 12px;
+  padding: 5px 10px;
+  margin: 10px auto;
+  display: inline-block;
 }
 
 .no-messages {

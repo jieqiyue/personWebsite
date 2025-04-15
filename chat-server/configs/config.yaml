@@ -9,7 +9,7 @@ redis:
   password: ""
   db: 0
   prefix: "chat:"
-  max_messages: 3  # 每个聊天室最多保存的消息数量
+  max_messages: 1000  # 每个聊天室最多保存的消息数量
 
 websocket:
   path: "/ws"
