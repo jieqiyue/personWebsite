@@ -135,9 +135,10 @@ const connect = async () => {
       return;
     }
     
-    // 创建WebSocket连接
+    // 创建WebSocket连接，根据当前页面协议选择ws或wss
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const roomId = selectedRoom.value;
-    const wsUrl = `ws://${window.location.hostname}:8080/ws?username=${encodeURIComponent(username.value)}&roomId=${encodeURIComponent(roomId)}`;
+    const wsUrl = `${wsProtocol}//${window.location.hostname}/ws?username=${encodeURIComponent(username.value)}&roomId=${encodeURIComponent(roomId)}`;
     
     ws.value = new WebSocket(wsUrl);
     
@@ -344,7 +345,9 @@ const formatTime = (timestamp) => {
 
 const loadRooms = async (force = false) => {
   try {
-    const response = await fetch(`http://${window.location.hostname}/api/rooms`);
+    // 使用与当前页面相同的协议
+    const protocol = window.location.protocol;
+    const response = await fetch(`${protocol}//${window.location.hostname}/api/rooms`);
     const data = await response.json();
     
     if (data.rooms && data.rooms.length > 0) {
@@ -422,7 +425,9 @@ const loadHistoryMessages = async () => {
     const offset = messageOffset.value;
     const limit = messageLimit.value;
     
-    const response = await fetch(`http://${window.location.hostname}/api/rooms/${selectedRoom.value}/messages?offset=${offset}&limit=${limit}`);
+    // 使用与当前页面相同的协议
+    const protocol = window.location.protocol;
+    const response = await fetch(`${protocol}//${window.location.hostname}/api/rooms/${selectedRoom.value}/messages?offset=${offset}&limit=${limit}`);
     const data = await response.json();
 
     console.log(data);
