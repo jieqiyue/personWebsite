@@ -344,7 +344,7 @@ const formatTime = (timestamp) => {
 
 const loadRooms = async (force = false) => {
   try {
-    const response = await fetch(`http://${window.location.hostname}:8080/api/rooms`);
+    const response = await fetch(`http://${window.location.hostname}/api/rooms`);
     const data = await response.json();
     
     if (data.rooms && data.rooms.length > 0) {
@@ -422,7 +422,7 @@ const loadHistoryMessages = async () => {
     const offset = messageOffset.value;
     const limit = messageLimit.value;
     
-    const response = await fetch(`http://${window.location.hostname}:8080/api/rooms/${selectedRoom.value}/messages?offset=${offset}&limit=${limit}`);
+    const response = await fetch(`http://${window.location.hostname}/api/rooms/${selectedRoom.value}/messages?offset=${offset}&limit=${limit}`);
     const data = await response.json();
 
     console.log(data);

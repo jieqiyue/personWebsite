@@ -205,7 +205,7 @@
       });
       
       // 发送请求获取房间列表
-      fetch(`http://${hostname}:${port}/api/rooms`)
+      fetch(`http://${hostname}/api/rooms`)
         .then(response => response.json())
         .then(data => {
           // 清空下拉列表
