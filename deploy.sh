@@ -62,7 +62,12 @@ docker stop my-vue-app-container || true
 docker rm my-vue-app-container || true
 
 # 重新运行容器
-docker run -d --name my-vue-app-container -p 80:80 my-vue-app
+#docker run -d --name my-vue-app-container -p 80:80 my-vue-app
+
+docker run -d --name my-vue-app-container -p 80:80 -p 443:443 \
+  -v /etc/letsencrypt/live/jieqyyy.top/fullchain.pem:/etc/letsencrypt/live/jieqyyy.top/fullchain.pem \
+  -v /etc/letsencrypt/live/jieqyyy.top/privkey.pem:/etc/letsencrypt/live/jieqyyy.top/privkey.pem \
+  my-vue-app
 echo "前端编译 + 打包 + 生成最终镜像结束"
 
 # 6. 删除悬空镜像
