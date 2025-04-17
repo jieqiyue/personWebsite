@@ -67,6 +67,7 @@ docker rm my-vue-app-container || true
 docker run -d --name my-vue-app-container -p 80:80 -p 443:443 \
   -v /etc/letsencrypt/live/jieqyyy.top/fullchain.pem:/etc/letsencrypt/live/jieqyyy.top/fullchain.pem \
   -v /etc/letsencrypt/live/jieqyyy.top/privkey.pem:/etc/letsencrypt/live/jieqyyy.top/privkey.pem \
+  --add-host=host.docker.internal:host-gateway \
   my-vue-app
 echo "前端编译 + 打包 + 生成最终镜像结束"
 
