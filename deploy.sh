@@ -3,7 +3,7 @@
 # 个人网站一键部署脚本
 
 # 设置项目信息
-GITHUB_REPO="git@gitee.com:qiyuejie/personWebsite.git"
+GITHUB_REPO="git@github.com:jieqiyue/personWebsite.git"
 PROJECT_DIR="/tmp/personWebsite"
 NGINX_DIR="/usr/share/nginx/html"
 
