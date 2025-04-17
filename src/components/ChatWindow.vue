@@ -94,6 +94,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
+import { roomApi, getWebSocketUrl } from '../services/api';
 
 // 定义属性和事件
 const props = defineProps({
@@ -135,11 +136,8 @@ const connect = async () => {
       return;
     }
     
-    // 创建WebSocket连接，根据当前页面协议选择ws或wss
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const roomId = selectedRoom.value;
-    const wsUrl = `${wsProtocol}//${window.location.hostname}/ws?username=${encodeURIComponent(username.value)}&roomId=${encodeURIComponent(roomId)}`;
-    
+    // 使用API服务创建WebSocket连接
+    const wsUrl = getWebSocketUrl(username.value, selectedRoom.value);
     ws.value = new WebSocket(wsUrl);
     
     ws.value.onopen = () => {
@@ -345,10 +343,8 @@ const formatTime = (timestamp) => {
 
 const loadRooms = async (force = false) => {
   try {
-    // 使用与当前页面相同的协议
-    const protocol = window.location.protocol;
-    const response = await fetch(`${protocol}//${window.location.hostname}/api/rooms`);
-    const data = await response.json();
+    // 使用API服务获取房间列表
+    const data = await roomApi.getAllRooms();
     
     if (data.rooms && data.rooms.length > 0) {
       rooms.value = data.rooms;
@@ -425,10 +421,8 @@ const loadHistoryMessages = async () => {
     const offset = messageOffset.value;
     const limit = messageLimit.value;
     
-    // 使用与当前页面相同的协议
-    const protocol = window.location.protocol;
-    const response = await fetch(`${protocol}//${window.location.hostname}/api/rooms/${selectedRoom.value}/messages?offset=${offset}&limit=${limit}`);
-    const data = await response.json();
+    // 使用API服务获取历史消息
+    const data = await roomApi.getRoomMessages(selectedRoom.value, offset, limit);
 
     console.log(data);
     if (data.messages && data.messages.length > 0) {
